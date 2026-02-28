@@ -1,66 +1,18 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect } from "react";
+import { SHOWS as SHOWS_RAW } from "./data/index.js";
 
-/* ════════════════════════════════════════════════════════════════
-   TVING PLAYGROUND — Real Image Edition
-   Uses Anthropic API + web_search at runtime to find actual
-   poster/thumbnail images for each show.
-   ════════════════════════════════════════════════════════════════ */
-
-// ─── IMAGE FETCHER: Uses Anthropic API to search for real images ────
-async function fetchImageUrl(query) {
-  try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 1000,
-        tools: [{ type: "web_search_20250305", name: "web_search" }],
-        messages: [{
-          role: "user",
-          content: `Search for "${query}" and find ONE direct image URL (ending in .jpg, .png, .webp) that shows the official poster or key visual. Return ONLY the raw image URL, nothing else. No markdown, no explanation. Just the URL.`
-        }]
-      })
-    });
-    const data = await res.json();
-    const text = data.content?.map(b => b.text || "").join("").trim();
-    // Extract URL from response
-    const urlMatch = text?.match(/https?:\/\/[^\s"'<>]+\.(jpg|jpeg|png|webp)[^\s"'<>]*/i);
-    return urlMatch ? urlMatch[0] : null;
-  } catch (e) {
-    console.error("Image fetch error:", e);
-    return null;
-  }
-}
-
-// ─── IMAGE CACHE HOOK ───────────────────────────────────────────
-function useImageCache(shows) {
-  const [images, setImages] = useState({});
-  const [loading, setLoading] = useState(true);
-  const fetched = useRef(false);
-
-  useEffect(() => {
-    if (fetched.current) return;
-    fetched.current = true;
-
-    const loadImages = async () => {
-      const cached = {};
-      // Fetch images sequentially to avoid rate limits
-      for (const show of shows) {
-        const url = await fetchImageUrl(`${show.title} 공식 포스터 드라마 예능`);
-        if (url) cached[show.id] = url;
-        // Small delay between requests
-        await new Promise(r => setTimeout(r, 800));
-      }
-      setImages(cached);
-      setLoading(false);
-    };
-
-    loadImages();
-  }, []);
-
-  return { images, loading };
-}
+// shows.js 스키마 → App 내부 포맷 변환
+const SHOWS = SHOWS_RAW.map(s => ({
+  ...s,
+  tc: s.tagColor,
+  desc: s.description,
+  rat: s.rating,
+  sched: s.schedule,
+  ep: s.episodes.length,
+  yt: `https://www.youtube.com/results?search_query=${encodeURIComponent(s.title + " 티빙 클립")}`,
+  clips: s.clips.map(c => ({ t: c.title, e: c.episode, thumb: c.clipThumbnail, url: c.clipUrl })),
+  shorts: s.shorts.map(sh => ({ t: sh.title, thumb: sh.shortsThumbnail })),
+}));
 
 // ─── FALLBACK POSTER (high quality SVG) ─────────────────────────
 function FallbackPoster({ title, genre, color, style }) {
@@ -120,38 +72,12 @@ function ShowImage({ src, title, genre, color, style, children }) {
         onLoad={() => setLoaded(true)}
         style={{ width: "100%", height: "100%", objectFit: "cover", opacity: loaded ? 1 : 0, transition: "opacity 0.3s" }}
         loading="lazy"
-        referrerPolicy="no-referrer"
-        crossOrigin="anonymous"
       />
       {children}
     </div>
   );
 }
 
-// ─── DATA ───────────────────────────────────────────────────────
-const SHOWS = [
-  { id:"ex4", title:"환승연애4", genre:"예능·리얼리티", tag:"HOT", tc:"#FF2D55", desc:"과몰입의 대명사, 환승연애 시즌4", yt:"https://www.youtube.com/results?search_query=환승연애4+티빙+클립", ep:22, free:true, rat:"15세", sched:"종영",
-    clips:[{t:"최종 선택 앞 엉켜가는 감정들",e:"20화"},{t:"멈춘 시간이 다시 흐르기 시작",e:"19화"},{t:"설레는 바다 데이트",e:"19화"}],
-    shorts:[{t:"백현&현지 진솔 대화"},{t:"우진&지연 재회의 순간"}] },
-  { id:"dx", title:"친애하는X", genre:"드라마·스릴러", tag:"NEW", tc:"#5856D6", desc:"김유정 주연, 가면 쓴 여자의 복수극", yt:"https://www.youtube.com/results?search_query=친애하는X+드라마", ep:12, free:false, price:3000, rat:"19세", sched:"완결",
-    clips:[{t:"백아진의 충격 반전",e:"8화"},{t:"김유정 연기 변신",e:"1화"}],
-    shorts:[{t:"백아진 명장면 모음"}] },
-  { id:"jg", title:"판사 이한영", genre:"드라마·법정", tag:"TOP", tc:"#FF9500", desc:"불의에 맞서는 판사의 이야기", yt:"https://www.youtube.com/results?search_query=판사이한영", ep:16, free:true, rat:"15세", sched:"매주 금 20:00",
-    clips:[{t:"한영의 파격 판결",e:"6화"},{t:"법정 명장면 모음",e:"전체"}],
-    shorts:[{t:"이한영 판사의 한마디"}] },
-  { id:"uq", title:"유퀴즈온더블럭", genre:"예능·토크", tag:"FREE", tc:"#34C759", desc:"유재석 & 조세호의 퀴즈쇼", yt:"https://www.youtube.com/results?search_query=유퀴즈온더블럭", ep:260, free:true, rat:"전체", sched:"매주 수 20:45",
-    clips:[{t:"레전드 게스트 모음",e:"최신"},{t:"유재석 리액션 모음",e:"최신"}],
-    shorts:[{t:"유퀴즈 웃음 폭발"},{t:"감동 사연 모음"}] },
-  { id:"ge", title:"대탈출 더스토리", genre:"예능·추리", tag:"HOT", tc:"#E8453C", desc:"극한 추리 탈출 버라이어티", yt:"https://www.youtube.com/results?search_query=대탈출더스토리", ep:10, free:false, price:2500, rat:"15세", sched:"매주 일 21:00",
-    clips:[{t:"소름돋는 추리 장면",e:"5화"},{t:"멤버들 공포 리액션",e:"3화"}],
-    shorts:[{t:"대탈출 소름 순간"}] },
-  { id:"sm", title:"쇼미더머니12", genre:"예능·힙합", tag:"LIVE", tc:"#F5A623", desc:"대한민국 대표 힙합 서바이벌", yt:"https://www.youtube.com/results?search_query=쇼미더머니12", ep:12, free:true, rat:"15세", sched:"매주 금 22:00",
-    clips:[{t:"역대급 무대 모음",e:"최신"},{t:"프로듀서 리액션",e:"최신"}],
-    shorts:[{t:"쇼미 12 핫클립"},{t:"랩 배틀 하이라이트"}] },
-  { id:"uv", title:"우주를 줄게", genre:"드라마·로맨스", tag:"NEW", tc:"#007AFF", desc:"배인혁×노정의 tvN 수목드라마", yt:"https://www.youtube.com/results?search_query=우주를줄게", ep:16, free:true, rat:"전체", sched:"매주 수목 20:40",
-    clips:[{t:"우주급 감성 장면",e:"4화"},{t:"배인혁×노정의 케미",e:"2화"}],
-    shorts:[{t:"우주를줄게 하이라이트"}] },
-];
 
 const GAMES = [
   { id:"quiz", name:"캐릭터 퀴즈", desc:"환승연애4 퀴즈", icon:"🧩", pts:50, c:"#FF2D55" },
@@ -238,10 +164,6 @@ export default function App() {
   const [allM,sAllM]=useState(false);
   const [hi,sHi]=useState(0);
 
-  // Image loading via Anthropic API
-  const { images, loading: imgLoading } = useImageCache(SHOWS);
-  const imgCount = Object.keys(images).length;
-
   const tt=m=>{sTst(m);setTimeout(()=>sTst(null),2500);};
   const buy=s=>{if(!lg){sLgM(true);return;}if(pt>=s.price){sPt(p=>p-s.price);sOwn(o=>[...o,s.id]);tt(`${s.title} 구매 완료! 🎬`);}else tt("포인트 부족 😢");};
   const rew=r=>{if(!lg){tt("로그인하면 포인트 적립!");return;}sPt(p=>p+r);};
@@ -270,7 +192,7 @@ export default function App() {
       {tab==="home"&&<div style={{paddingBottom:80}}>
         {/* Hero Banner */}
         <div style={{position:"relative",height:300,marginBottom:8,overflow:"hidden"}}>
-          <ShowImage src={images[h.id]} title={h.title} genre={h.genre} color={h.tc} style={{position:"absolute",inset:0}}>
+          <ShowImage src={h.bannerImage} title={h.title} genre={h.genre} color={h.tc} style={{position:"absolute",inset:0}}>
             <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(0,0,0,0.3) 0%,rgba(0,0,0,0.1) 40%,rgba(0,0,0,0.8) 100%)"}} />
           </ShowImage>
           <div style={{position:"absolute",bottom:0,left:0,right:0,padding:24,zIndex:2}}>
@@ -289,14 +211,13 @@ export default function App() {
           {[{i:"🆓",l:"무료 VOD",a:()=>sAllM(true)},{i:"📱",l:"쇼츠",a:()=>sTab("shorts")},{i:"🎮",l:"미니게임",a:()=>sTab("game")},{i:"📅",l:"공개일정",a:()=>sTab("sched")}].map((m,k)=><button key={k} onClick={m.a} style={{background:"#1C1C1E",border:"1px solid #222",borderRadius:14,padding:"14px 4px",display:"flex",flexDirection:"column",alignItems:"center",gap:6,cursor:"pointer"}}><span style={{fontSize:24}}>{m.i}</span><span style={{fontSize:11,color:"#ccc"}}>{m.l}</span></button>)}
         </div>
 
-        <ImageLoadingBanner loading={imgLoading} count={imgCount} total={SHOWS.length} />
 
         {/* VOD */}
         <SH t="인기 VOD" s="지금 핫한 콘텐츠" onMore={()=>sAllM(true)} />
         <div style={{display:"flex",gap:10,overflowX:"auto",padding:"0 16px 20px"}}>
           {SHOWS.map(s=><div key={s.id} onClick={()=>sDet(s)} style={{minWidth:130,cursor:"pointer",flexShrink:0}}>
             <div style={{position:"relative",width:130,height:184,borderRadius:10,overflow:"hidden"}}>
-              <ShowImage src={images[s.id]} title={s.title} genre={s.genre} color={s.tc}>
+              <ShowImage src={s.posterImage} title={s.title} genre={s.genre} color={s.tc}>
                 <div style={{position:"absolute",top:6,left:6,padding:"2px 8px",background:s.tc,borderRadius:6,fontSize:10,fontWeight:700,color:"#fff",zIndex:2}}>{s.tag}</div>
                 {!s.free&&!own.includes(s.id)&&<div style={{position:"absolute",top:6,right:6,color:"#FFD60A",zIndex:2}}><Ic.Lock /></div>}
                 <div style={{position:"absolute",bottom:0,left:0,right:0,height:60,background:"linear-gradient(transparent,rgba(0,0,0,0.8))",zIndex:1}} />
@@ -311,7 +232,7 @@ export default function App() {
         <div style={{display:"flex",gap:10,overflowX:"auto",padding:"0 16px 20px"}}>
           {SHOWS.flatMap(s=>s.shorts.map((sh,i)=>({...sh,show:s,key:`${s.id}s${i}`}))).slice(0,8).map(it=><div key={it.key} style={{minWidth:110,flexShrink:0,cursor:"pointer"}} onClick={()=>sDet(it.show)}>
             <div style={{width:110,height:160,borderRadius:10,overflow:"hidden",position:"relative"}}>
-              <ShowImage src={images[it.show.id]} title={it.t} color={it.show.tc}>
+              <ShowImage src={it.thumb || it.show.posterImage} title={it.t} color={it.show.tc}>
                 <div style={{position:"absolute",inset:0,background:"linear-gradient(transparent 40%,rgba(0,0,0,0.8))"}} />
                 <PlayBtn />
                 <div style={{position:"absolute",bottom:6,left:6,right:6,zIndex:2}}><div style={{fontSize:10,color:"#fff",fontWeight:500,lineHeight:1.3,textShadow:"0 1px 3px #000"}}>{it.t}</div><div style={{fontSize:9,color:"#bbb",marginTop:2}}>{it.show.title}</div></div>
@@ -325,7 +246,7 @@ export default function App() {
         <div style={{display:"flex",gap:10,overflowX:"auto",padding:"0 16px 20px"}}>
           {SHOWS.flatMap(s=>s.clips.map((c,i)=>({...c,show:s,key:`${s.id}c${i}`}))).slice(0,8).map(it=><div key={it.key} style={{minWidth:220,flexShrink:0,cursor:"pointer"}} onClick={()=>sDet(it.show)}>
             <div style={{width:220,height:124,borderRadius:10,overflow:"hidden",position:"relative"}}>
-              <ShowImage src={images[it.show.id]} title={it.t} color={it.show.tc}>
+              <ShowImage src={it.thumb || it.show.posterImage} title={it.t} color={it.show.tc}>
                 <div style={{position:"absolute",inset:0,background:"linear-gradient(transparent 30%,rgba(0,0,0,0.8))"}} />
                 <PlayBtn size={36} />
                 <div style={{position:"absolute",bottom:0,left:0,right:0,padding:"16px 10px 8px",zIndex:2}}><div style={{fontSize:12,color:"#fff",fontWeight:500,textShadow:"0 1px 3px #000"}}>{it.t}</div><div style={{fontSize:10,color:"#bbb"}}>{it.show.title} · {it.e}</div></div>
@@ -347,12 +268,12 @@ export default function App() {
 
       {/* ═══ SHORTS ═══ */}
       {tab==="shorts"&&<div style={{paddingBottom:80}}><div style={{padding:"0 16px 12px"}}><div style={{fontSize:20,fontWeight:700}}>쇼츠</div><div style={{fontSize:13,color:"#888",marginTop:2}}>세로형 숏폼</div></div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,padding:"0 16px"}}>{SHOWS.flatMap(s=>s.shorts.map((sh,i)=>({...sh,show:s,key:`${s.id}s${i}`}))).map(it=><div key={it.key} style={{cursor:"pointer"}} onClick={()=>sDet(it.show)}><div style={{width:"100%",aspectRatio:"9/16",borderRadius:12,overflow:"hidden",position:"relative"}}><ShowImage src={images[it.show.id]} title={it.t} color={it.show.tc}><div style={{position:"absolute",inset:0,background:"linear-gradient(transparent 50%,rgba(0,0,0,0.8))"}}/><PlayBtn size={40}/><div style={{position:"absolute",bottom:8,left:8,right:8,zIndex:2}}><div style={{fontSize:12,fontWeight:600,color:"#fff",textShadow:"0 1px 4px #000"}}>{it.t}</div><div style={{fontSize:10,color:"#bbb",marginTop:2}}>{it.show.title}</div></div></ShowImage></div></div>)}</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,padding:"0 16px"}}>{SHOWS.flatMap(s=>s.shorts.map((sh,i)=>({...sh,show:s,key:`${s.id}s${i}`}))).map(it=><div key={it.key} style={{cursor:"pointer"}} onClick={()=>sDet(it.show)}><div style={{width:"100%",aspectRatio:"9/16",borderRadius:12,overflow:"hidden",position:"relative"}}><ShowImage src={it.thumb || it.show.posterImage} title={it.t} color={it.show.tc}><div style={{position:"absolute",inset:0,background:"linear-gradient(transparent 50%,rgba(0,0,0,0.8))"}}/><PlayBtn size={40}/><div style={{position:"absolute",bottom:8,left:8,right:8,zIndex:2}}><div style={{fontSize:12,fontWeight:600,color:"#fff",textShadow:"0 1px 4px #000"}}>{it.t}</div><div style={{fontSize:10,color:"#bbb",marginTop:2}}>{it.show.title}</div></div></ShowImage></div></div>)}</div>
       </div>}
 
       {/* ═══ CLIP ═══ */}
       {tab==="clip"&&<div style={{paddingBottom:80}}><div style={{padding:"0 16px 12px"}}><div style={{fontSize:20,fontWeight:700}}>클립</div><div style={{fontSize:13,color:"#888",marginTop:2}}>가로형 하이라이트</div></div>
-        <div style={{display:"flex",flexDirection:"column",gap:12,padding:"0 16px"}}>{SHOWS.flatMap(s=>s.clips.map((c,i)=>({...c,show:s,key:`${s.id}c${i}`}))).map(it=><div key={it.key} style={{cursor:"pointer"}} onClick={()=>sDet(it.show)}><div style={{width:"100%",aspectRatio:"16/9",borderRadius:12,overflow:"hidden",position:"relative"}}><ShowImage src={images[it.show.id]} title={it.t} color={it.show.tc}><div style={{position:"absolute",inset:0,background:"linear-gradient(transparent 30%,rgba(0,0,0,0.8))"}}/><PlayBtn size={48}/><div style={{position:"absolute",bottom:0,left:0,right:0,padding:"24px 12px 10px",zIndex:2}}><div style={{fontSize:14,fontWeight:600,color:"#fff",textShadow:"0 1px 4px #000"}}>{it.t}</div><div style={{fontSize:12,color:"#bbb",marginTop:2}}>{it.show.title} · {it.e}</div></div></ShowImage></div></div>)}</div>
+        <div style={{display:"flex",flexDirection:"column",gap:12,padding:"0 16px"}}>{SHOWS.flatMap(s=>s.clips.map((c,i)=>({...c,show:s,key:`${s.id}c${i}`}))).map(it=><div key={it.key} style={{cursor:"pointer"}} onClick={()=>sDet(it.show)}><div style={{width:"100%",aspectRatio:"16/9",borderRadius:12,overflow:"hidden",position:"relative"}}><ShowImage src={it.thumb || it.show.posterImage} title={it.t} color={it.show.tc}><div style={{position:"absolute",inset:0,background:"linear-gradient(transparent 30%,rgba(0,0,0,0.8))"}}/><PlayBtn size={48}/><div style={{position:"absolute",bottom:0,left:0,right:0,padding:"24px 12px 10px",zIndex:2}}><div style={{fontSize:14,fontWeight:600,color:"#fff",textShadow:"0 1px 4px #000"}}>{it.t}</div><div style={{fontSize:12,color:"#bbb",marginTop:2}}>{it.show.title} · {it.e}</div></div></ShowImage></div></div>)}</div>
       </div>}
 
       {/* ═══ GAME ═══ */}
@@ -383,7 +304,7 @@ export default function App() {
 
       {/* ═══ MODALS ═══ */}
       {det&&<Modal onClose={()=>sDet(null)}><div style={{padding:"0 20px 32px"}}>
-        <div style={{width:"100%",height:200,borderRadius:12,overflow:"hidden",marginBottom:16}}><ShowImage src={images[det.id]} title={det.title} genre={det.genre} color={det.tc} /></div>
+        <div style={{width:"100%",height:200,borderRadius:12,overflow:"hidden",marginBottom:16}}><ShowImage src={det.bannerImage} title={det.title} genre={det.genre} color={det.tc} /></div>
         <div style={{fontSize:24,fontWeight:800,marginBottom:6}}>{det.title}</div>
         <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}><span style={{padding:"3px 10px",background:det.tc,borderRadius:8,fontSize:11,fontWeight:700}}>{det.tag}</span><span style={{fontSize:12,color:"#888"}}>{det.rat} · {det.genre} · {det.ep}화</span></div>
         <div style={{fontSize:14,color:"#999",marginBottom:16,lineHeight:1.5}}>{det.desc}</div>
@@ -394,18 +315,18 @@ export default function App() {
         </div>
         <div style={{fontSize:15,fontWeight:700,marginBottom:10}}>클립</div>
         {det.clips.map((c,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0",borderBottom:"1px solid #222"}}>
-          <div style={{width:100,height:56,borderRadius:8,overflow:"hidden",flexShrink:0,position:"relative"}}><ShowImage src={images[det.id]} title={c.t} color={det.tc}><div style={{position:"absolute",inset:0,background:"rgba(0,0,0,0.3)"}}/><PlayBtn size={24}/></ShowImage></div>
+          <div style={{width:100,height:56,borderRadius:8,overflow:"hidden",flexShrink:0,position:"relative"}}><ShowImage src={c.thumb || det.posterImage} title={c.t} color={det.tc}><div style={{position:"absolute",inset:0,background:"rgba(0,0,0,0.3)"}}/><PlayBtn size={24}/></ShowImage></div>
           <div style={{flex:1,minWidth:0}}><div style={{fontSize:13,fontWeight:500,color:"#fff",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.t}</div><div style={{fontSize:11,color:"#888"}}>{c.e}</div></div>
         </div>)}
         <div style={{fontSize:15,fontWeight:700,margin:"16px 0 10px"}}>쇼츠</div>
-        <div style={{display:"flex",gap:8,overflowX:"auto"}}>{det.shorts.map((sh,i)=><div key={i} style={{minWidth:100,flexShrink:0}}><div style={{width:100,height:140,borderRadius:10,overflow:"hidden",position:"relative"}}><ShowImage src={images[det.id]} title={sh.t} color={det.tc}><div style={{position:"absolute",inset:0,background:"linear-gradient(transparent 50%,rgba(0,0,0,0.8))"}}/><PlayBtn/><div style={{position:"absolute",bottom:6,left:6,right:6,fontSize:10,color:"#fff",textShadow:"0 1px 3px #000",zIndex:2}}>{sh.t}</div></ShowImage></div></div>)}</div>
+        <div style={{display:"flex",gap:8,overflowX:"auto"}}>{det.shorts.map((sh,i)=><div key={i} style={{minWidth:100,flexShrink:0}}><div style={{width:100,height:140,borderRadius:10,overflow:"hidden",position:"relative"}}><ShowImage src={sh.thumb || det.posterImage} title={sh.t} color={det.tc}><div style={{position:"absolute",inset:0,background:"linear-gradient(transparent 50%,rgba(0,0,0,0.8))"}}/><PlayBtn/><div style={{position:"absolute",bottom:6,left:6,right:6,fontSize:10,color:"#fff",textShadow:"0 1px 3px #000",zIndex:2}}>{sh.t}</div></ShowImage></div></div>)}</div>
       </div></Modal>}
 
       {lgM&&<Modal onClose={()=>sLgM(false)}><div style={{padding:"8px 20px 32px",textAlign:"center"}}><div style={{fontSize:28,fontWeight:800,background:"linear-gradient(135deg,#FF2D55,#FF6B35)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:8}}>TVING</div><div style={{fontSize:16,fontWeight:600,marginBottom:4}}>놀이터에 오신 걸 환영해요!</div><div style={{fontSize:13,color:"#888",marginBottom:24}}>로그인하면 포인트 적립, 구매 등 가능</div><button onClick={()=>{sLg(true);sLgM(false);tt("로그인 완료! 🎉");}} style={{width:"100%",padding:14,background:"#FF2D55",border:"none",borderRadius:12,color:"#fff",fontWeight:700,fontSize:16,cursor:"pointer",marginBottom:10}}>티빙 ID로 로그인</button><button onClick={()=>sLgM(false)} style={{width:"100%",padding:14,background:"#333",border:"none",borderRadius:12,color:"#999",fontWeight:600,fontSize:14,cursor:"pointer"}}>나중에</button></div></Modal>}
 
       {subM&&<Modal onClose={()=>sSubM(false)}><div style={{padding:"8px 20px 32px"}}><div style={{fontSize:20,fontWeight:700,marginBottom:20}}>구독권</div>{SUBS.map((s,i)=><div key={i} style={{background:"#111",border:`1px solid ${s.c}44`,borderRadius:14,padding:18,marginBottom:10,position:"relative"}}>{i===2&&<div style={{position:"absolute",top:0,right:0,background:s.c,padding:"4px 12px",borderRadius:"0 0 0 10px",fontSize:10,fontWeight:700}}>추천</div>}<div style={{fontSize:16,fontWeight:700,color:s.c}}>{s.name}</div><div style={{fontSize:22,fontWeight:800,marginBottom:10}}>₩{s.price.toLocaleString()}<span style={{fontSize:13,color:"#888",fontWeight:400}}>/월</span></div><div style={{display:"flex",flexWrap:"wrap",gap:6}}>{s.ft.map((f,fi)=><span key={fi} style={{display:"flex",alignItems:"center",gap:4,fontSize:12,color:"#aaa"}}><Ic.Chk/>{f}</span>)}</div><button onClick={()=>{tt(`${s.name} 구독!`);sSubM(false);}} style={{width:"100%",marginTop:12,padding:10,background:`${s.c}22`,border:`1px solid ${s.c}44`,borderRadius:10,color:s.c,fontWeight:600,fontSize:14,cursor:"pointer"}}>구독하기</button></div>)}</div></Modal>}
 
-      {allM&&<Modal onClose={()=>sAllM(false)}><div style={{padding:"8px 20px 32px"}}><div style={{fontSize:20,fontWeight:700,marginBottom:16}}>전체 VOD</div>{SHOWS.map(s=><div key={s.id} onClick={()=>{sAllM(false);sDet(s);}} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 0",borderBottom:"1px solid #222",cursor:"pointer"}}><div style={{width:56,height:56,borderRadius:10,overflow:"hidden",flexShrink:0}}><ShowImage src={images[s.id]} title={s.title} color={s.tc}/></div><div style={{flex:1,minWidth:0}}><div style={{display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:14,fontWeight:600}}>{s.title}</span><span style={{padding:"1px 6px",background:s.tc,borderRadius:4,fontSize:9,fontWeight:700}}>{s.tag}</span></div><div style={{fontSize:12,color:"#888",marginTop:2}}>{s.genre} · {s.ep}화</div></div><div style={{flexShrink:0}}>{s.free?<span style={{fontSize:12,color:"#34C759",fontWeight:600}}>무료</span>:own.includes(s.id)?<Ic.Chk/>:<span style={{fontSize:12,color:"#FFD60A",fontWeight:600}}>{s.price?.toLocaleString()}P</span>}</div></div>)}</div></Modal>}
+      {allM&&<Modal onClose={()=>sAllM(false)}><div style={{padding:"8px 20px 32px"}}><div style={{fontSize:20,fontWeight:700,marginBottom:16}}>전체 VOD</div>{SHOWS.map(s=><div key={s.id} onClick={()=>{sAllM(false);sDet(s);}} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 0",borderBottom:"1px solid #222",cursor:"pointer"}}><div style={{width:56,height:56,borderRadius:10,overflow:"hidden",flexShrink:0}}><ShowImage src={s.posterImage} title={s.title} color={s.tc}/></div><div style={{flex:1,minWidth:0}}><div style={{display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:14,fontWeight:600}}>{s.title}</span><span style={{padding:"1px 6px",background:s.tc,borderRadius:4,fontSize:9,fontWeight:700}}>{s.tag}</span></div><div style={{fontSize:12,color:"#888",marginTop:2}}>{s.genre} · {s.ep}화</div></div><div style={{flexShrink:0}}>{s.free?<span style={{fontSize:12,color:"#34C759",fontWeight:600}}>무료</span>:own.includes(s.id)?<Ic.Chk/>:<span style={{fontSize:12,color:"#FFD60A",fontWeight:600}}>{s.price?.toLocaleString()}P</span>}</div></div>)}</div></Modal>}
 
       {tst&&<div style={{position:"fixed",top:60,left:"50%",transform:"translateX(-50%)",background:"#333",color:"#fff",padding:"10px 20px",borderRadius:12,fontSize:14,fontWeight:500,zIndex:300,boxShadow:"0 4px 20px #0008",animation:"fi .3s"}}>{tst}</div>}
     </div>

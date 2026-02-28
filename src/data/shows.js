@@ -200,31 +200,44 @@ export const SHOWS = [
     id: "uq",
     title: "유퀴즈온더블럭",
     genre: "예능·토크",
-    year: 2018,
+    year: 2020,
     cast: ["유재석", "조세호"],
     description:
-      "길거리에서 만난 평범한 사람들의 특별한 삶 이야기를 담는 퀴즈 토크쇼. 332회가 넘도록 꾸준히 사랑받는 tvN 대표 예능.",
+      "토킹 어바웃 유! MC 유재석과 자기님들의 인생으로 떠나는 사람 여행",
     tag: "FREE",
     tagColor: "#34C759",
-    posterImage: ph(300, 450, "#34C759", "유퀴즈"),
-    bannerImage: ph(900, 506, "#34C759", "유퀴즈온더블럭"),
+    posterImage: "https://image.tving.com/ntgs/contents/CTC/caip/CAIP0200/ko/20260106/1356/P000643144.jpg",
+    bannerImage: "https://image.tving.com/ntgs/contents/CTC/caip/CAIP0900/ko/20260106/1356/P000643144.jpg",
     free: true,
     rating: "전체",
     schedule: "매주 수 20:45",
 
-    // ─ 에피소드 (최근 10화 노출) ─────────────────
-    episodes: makeEps(10, 4501001),
+    // ─ 에피소드 (최근 20화: 332~313화) ──────────
+    episodes: makeEpsReal([
+      "E004516270", "E004510338", "E004506825", "E004503226", "E004499665",
+      "E004496400", "E004492952", "E004489771", "E004486210", "E004482148",
+      "E004478177", "E004474077", "E004469931", "E004465816", "E004461873",
+      "E004458327", "E004453709", "E004450173", "E004446099", "E004438870",
+    ]),
 
-    // ─ 클립 (8개) ───────────────────────────────
+    // ─ 클립 (16개) ──────────────────────────────
     clips: [
-      { id: "uq-c1", title: "역대급 사연자 울컥 엔딩",         episode: "330화", clipUrl: "https://www.tving.com/contents/L00000289301", clipThumbnail: ph(640, 360, "#34C759", "유퀴즈"), shortsThumbnail: ph(360, 640, "#34C759", "유퀴즈") },
-      { id: "uq-c2", title: "유재석&조세호 브로맨스 명장면",   episode: "325화", clipUrl: "https://www.tving.com/contents/L00000289302", clipThumbnail: ph(640, 360, "#34C759", "유퀴즈"), shortsThumbnail: ph(360, 640, "#34C759", "유퀴즈") },
-      { id: "uq-c3", title: "100만원 정답 순간 터진 환호",     episode: "328화", clipUrl: "https://www.tving.com/contents/L00000289303", clipThumbnail: ph(640, 360, "#34C759", "유퀴즈"), shortsThumbnail: ph(360, 640, "#34C759", "유퀴즈") },
-      { id: "uq-c4", title: "소방관 사연자 눈물 터진 명장면",  episode: "310화", clipUrl: "https://www.tving.com/contents/L00000289304", clipThumbnail: ph(640, 360, "#34C759", "유퀴즈"), shortsThumbnail: ph(360, 640, "#34C759", "유퀴즈") },
-      { id: "uq-c5", title: "유재석도 울어버린 그 사연",       episode: "300화", clipUrl: "https://www.tving.com/contents/L00000289305", clipThumbnail: ph(640, 360, "#34C759", "유퀴즈"), shortsThumbnail: ph(360, 640, "#34C759", "유퀴즈") },
-      { id: "uq-c6", title: "역대 최고 난이도 퀴즈 도전",      episode: "322화", clipUrl: "https://www.tving.com/contents/L00000289306", clipThumbnail: ph(640, 360, "#34C759", "유퀴즈"), shortsThumbnail: ph(360, 640, "#34C759", "유퀴즈") },
-      { id: "uq-c7", title: "100세 할머니와의 감동 대화",      episode: "290화", clipUrl: "https://www.tving.com/contents/L00000289307", clipThumbnail: ph(640, 360, "#34C759", "유퀴즈"), shortsThumbnail: ph(360, 640, "#34C759", "유퀴즈") },
-      { id: "uq-c8", title: "조세호 복귀 첫 방송 눈물",        episode: "270화", clipUrl: "https://www.tving.com/contents/L00000289308", clipThumbnail: ph(640, 360, "#34C759", "유퀴즈"), shortsThumbnail: ph(360, 640, "#34C759", "유퀴즈") },
+      { id: "uq-c1",  title: "\"비시즌에 운동한 게 아까워서라도\" 김상겸 자기님의 야구 사랑",              episode: "332화", clipUrl: "https://www.tving.com/contents/L00000292254", clipThumbnail: "https://image.tving.com/ntgs/news/clip/20260227005650/thumbnail/L00000292254.png", shortsThumbnail: ph(360, 640, "#34C759", "유퀴즈") },
+      { id: "uq-c2",  title: "\"그때 많이 힘들었죠\" 김상겸이 겪었던 어깨 부상",                          episode: "332화", clipUrl: "https://www.tving.com/contents/L00000292253", clipThumbnail: "https://image.tving.com/ntgs/news/clip/20260227005508/thumbnail/L00000292253.png", shortsThumbnail: ph(360, 640, "#34C759", "유퀴즈") },
+      { id: "uq-c3",  title: "18번부터 범상치 않은 선곡? 유해진 자기님의 노래방 레파토리",                 episode: "332화", clipUrl: "https://www.tving.com/contents/L00000292252", clipThumbnail: "https://image.tving.com/ntgs/news/clip/20260227005427/thumbnail/L00000292252.png", shortsThumbnail: ph(360, 640, "#34C759", "유퀴즈") },
+      { id: "uq-c4",  title: "비만 치료제 정말 도움 될까? 진짜 팩트만 알려주는 내과 전문의",               episode: "332화", clipUrl: "https://www.tving.com/contents/L00000292251", clipThumbnail: "https://image.tving.com/ntgs/news/clip/20260227005342/thumbnail/L00000292251.png", shortsThumbnail: ph(360, 640, "#34C759", "유퀴즈") },
+      { id: "uq-c5",  title: "빈말 하지 않는 박지훈이 좋았던 유해진 자기님",                               episode: "332화", clipUrl: "https://www.tving.com/contents/L00000292250", clipThumbnail: "https://image.tving.com/ntgs/news/clip/20260227005257/thumbnail/L00000292250.png", shortsThumbnail: ph(360, 640, "#34C759", "유퀴즈") },
+      { id: "uq-c6",  title: "대한민국을 단종 신드롬으로 이끈 박지훈 자기님",                              episode: "332화", clipUrl: "https://www.tving.com/contents/L00000292249", clipThumbnail: "https://image.tving.com/ntgs/news/clip/20260227005208/thumbnail/L00000292249.png", shortsThumbnail: ph(360, 640, "#34C759", "유퀴즈") },
+      { id: "uq-c7",  title: "\"나 찍혔나 봐…!\" 박지훈 자기님의 단종 역 캐스팅 비하인드",                episode: "332화", clipUrl: "https://www.tving.com/contents/L00000292248", clipThumbnail: "https://image.tving.com/ntgs/news/clip/20260227003723/thumbnail/L00000292248.png", shortsThumbnail: ph(360, 640, "#34C759", "유퀴즈") },
+      { id: "uq-c8",  title: "배가 안 고픈데도 손이 떨렸어요 허가윤 자기님",                               episode: "332화", clipUrl: "https://www.tving.com/contents/L00000292247", clipThumbnail: "https://image.tving.com/ntgs/news/clip/20260227003601/thumbnail/L00000292247.png", shortsThumbnail: ph(360, 640, "#34C759", "유퀴즈") },
+      { id: "uq-c9",  title: "\"망치로 맞은 듯한 충격이었습니다\" 프로파일러가 전하는 실화",               episode: "331화", clipUrl: "https://www.tving.com/contents/L00000285131", clipThumbnail: "https://image.tving.com/ntgs/news/clip/20260212221649/thumbnail/L00000285131.png", shortsThumbnail: ph(360, 640, "#34C759", "유퀴즈") },
+      { id: "uq-c10", title: "\"2~3일에 한 명씩 사망합니다\" 교제 폭력의 현실",                            episode: "331화", clipUrl: "https://www.tving.com/contents/L00000285130", clipThumbnail: "https://image.tving.com/ntgs/news/clip/20260212221557/thumbnail/L00000285130.png", shortsThumbnail: ph(360, 640, "#34C759", "유퀴즈") },
+      { id: "uq-c11", title: "\"넌 반드시 잡힐 거야\" 프로파일러들이 전한 진심",                           episode: "331화", clipUrl: "https://www.tving.com/contents/L00000285129", clipThumbnail: "https://image.tving.com/ntgs/news/clip/20260212221502/thumbnail/L00000285129.png", shortsThumbnail: ph(360, 640, "#34C759", "유퀴즈") },
+      { id: "uq-c12", title: "\"가나에서 치킨 튀기다 대사가 됐습니다\" 가나 대사 자기님",                  episode: "331화", clipUrl: "https://www.tving.com/contents/L00000285128", clipThumbnail: "https://image.tving.com/ntgs/news/clip/20260212221408/thumbnail/L00000285128.png", shortsThumbnail: ph(360, 640, "#34C759", "유퀴즈") },
+      { id: "uq-c13", title: "'거북선 빵'으로 프랑스에서 태극기를 올린 자기님",                            episode: "331화", clipUrl: "https://www.tving.com/contents/L00000285127", clipThumbnail: "https://image.tving.com/ntgs/news/clip/20260212221317/thumbnail/L00000285127.jpg", shortsThumbnail: ph(360, 640, "#34C759", "유퀴즈") },
+      { id: "uq-c14", title: "밥 차 한 대 분량을 직접? 조인성 자기님의 선행",                              episode: "331화", clipUrl: "https://www.tving.com/contents/L00000285126", clipThumbnail: "https://image.tving.com/ntgs/news/clip/20260212221201/thumbnail/L00000285126.jpg", shortsThumbnail: ph(360, 640, "#34C759", "유퀴즈") },
+      { id: "uq-c15", title: "\"저도 서태지 선배님인 줄 몰랐어요\" 신세경 자기님",                         episode: "330화", clipUrl: "https://www.tving.com/contents/L00000285061", clipThumbnail: "https://image.tving.com/ntgs/news/clip/20260212211417/thumbnail/L00000285061.jpg", shortsThumbnail: ph(360, 640, "#34C759", "유퀴즈") },
+      { id: "uq-c16", title: "<지붕킥>부터 지금까지, 신세경이 28년째 걸어온 길",                           episode: "330화", clipUrl: "https://www.tving.com/contents/L00000285060", clipThumbnail: "https://image.tving.com/ntgs/news/clip/20260212210916/thumbnail/L00000285060.jpg", shortsThumbnail: ph(360, 640, "#34C759", "유퀴즈") },
     ],
 
     // ─ 쇼츠 (6개) ───────────────────────────────

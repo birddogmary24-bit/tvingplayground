@@ -675,10 +675,6 @@ function CatGame({ onDone, onGoShorts, onGoClip }) {
     </div>
   );
 }
-      </div>
-    </div>
-  );
-}
 
 // ─── SHARED UI ──────────────────────────────────────────────────
 const SH=({t,s,onMore})=><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"4px 16px 10px"}}><div><div style={{fontSize:17,fontWeight:700,color:"#fff"}}>{t}</div>{s&&<div style={{fontSize:12,color:"#888",marginTop:1}}>{s}</div>}</div>{onMore&&<button onClick={onMore} style={{background:"none",border:"none",color:"#888",fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",gap:2}}>더보기<Ic.Arr /></button>}</div>;

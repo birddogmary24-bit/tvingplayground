@@ -1,57 +1,100 @@
+# SESSION LOG — TVING Playground
+
+---
+
+### [2026-02-28] Initial project setup: TVING Playground (Vite + React)
+**작업 내용**: Vite + React 18 프로젝트 초기 세팅. Claude.ai Artifact에서 개발된 단일 App.jsx를 독립 프로젝트로 전환.
+**의도/목적**: Claude Artifact 환경에서 벗어나 실제 배포 가능한 Vite 프로젝트로 전환
+**영향도**:
+- 직접 영향: package.json, vite.config.js, index.html, src/main.jsx, src/App.jsx
+- 연관 영향: 프로젝트 전체 구조 수립
+**관련 커밋**: 8a10c20
+
+---
+
+### [2026-02-28] feat: add content DB with real TVING data (shows.js)
+**작업 내용**: 실제 TVING 콘텐츠 7개(환승연애4, 친애하는X, 판사 이한영, 유퀴즈온더블럭, 대탈출 더스토리, 쇼미더머니12, 우주를 줄게)의 메타데이터를 `src/data/shows.js`에 정리. 포스터/배너 이미지 URL, 클립 URL, 쇼츠 썸네일 등 포함.
+**의도/목적**: 하드코딩된 더미 데이터를 실제 TVING 기반 콘텐츠 DB로 교체
+**영향도**:
+- 직접 영향: src/data/shows.js (신규), src/data/index.js (신규)
+- 연관 영향: App.jsx에서 import하여 전체 콘텐츠 렌더링에 사용
+**관련 커밋**: e54e37b
+
+---
+
+### [2026-02-28] feat: update 유퀴즈온더블럭 with real TVING crawled data
+**작업 내용**: 유퀴즈온더블럭 콘텐츠의 실제 TVING 크롤링 데이터(에피소드, 클립, 쇼츠) 업데이트
+**의도/목적**: 크롤링으로 수집한 실제 데이터로 콘텐츠 정보 보강
+**영향도**:
+- 직접 영향: src/data/shows.js (유퀴즈온더블럭 항목)
+**관련 커밋**: 66affd9, 070c897
+
+---
+
+### [2026-02-28] docs: add project documentation system
+**작업 내용**: docs/ 폴더에 SESSION_LOG.md, DECISION_LOG.md, PRD.md, FEATURE_LIST.md 문서 체계 생성
+**의도/목적**: CLAUDE.md 규칙에 따른 프로젝트 문서화 체계 수립
+**영향도**:
+- 직접 영향: docs/ 폴더 전체
+**관련 커밋**: 6a48565
 
 ---
 
 ### [2026-02-28] feat: fix dev server config and add Vercel deployment
-**작업 내용**: feat: fix dev server config and add Vercel deployment
-**의도/목적**: (직접 보완해주세요)
+**작업 내용**: vite.config.js에 host 옵션 추가, vercel.json 배포 설정 파일 생성. Vercel 프로덕션 배포 완료.
+**의도/목적**: 로컬 개발 서버와 Vercel 프로덕션 배포 환경 구성
 **영향도**:
-- src/App.jsx
-- vercel.json
-**관련 커밋**: c47e4a0
+- 직접 영향: vite.config.js, vercel.json
+- 연관 영향: Vercel 배포 파이프라인 구축
+**관련 커밋**: c47e4a0, 80ee074, 4d924e2
 
 ---
 
 ### [2026-03-01] feat: add 3Pack banner and link clips/shorts to TVING URLs
-**작업 내용**: Hero Banner "클립 보러가기" / 상세 모달 "TVING 보기" 버튼을 YouTube 검색 URL에서 실제 TVING URL로 교체. 클립 카드·쇼츠 카드 클릭 시 TVING으로 직접 이동. 인기 VOD 위에 Disney+/TVING/Wavve 3Pack 배너 추가.
-**의도/목적**: shows.js에 이미 수집된 TVING E-코드(VOD)/L-코드(클립) URL을 실제 링크로 활용. YouTube 검색 우회 제거.
+**작업 내용**:
+1. **3Pack 배너 추가**: 인기 VOD 섹션 위에 Disney+/TVING/Wavve 3Pack 프로모션 배너 삽입 (640x120 비율, 다크 네이비 배경, CSS/SVG 기반)
+2. **TVING URL 연동**: YouTube 검색 URL → 실제 TVING VOD/클립 URL로 전면 교체
+   - Hero Banner "클립 보러가기" → `clips[0].clipUrl` 또는 `episodes[0].vodUrl`
+   - 상세 모달 "유튜브 보기" → "TVING 보기"로 변경, `episodes[0].vodUrl` 연결
+   - 클립 카드 클릭 → 해당 클립의 `clipUrl`로 TVING 새 탭 이동
+   - 쇼츠 카드 클릭 → 해당 프로그램의 `tvingUrl`로 TVING 새 탭 이동
+   - 모달 내 클립/쇼츠 리스트 클릭 → TVING 직접 이동
+3. **배너 클릭**: https://www.tving.com/list/theme/3pack 으로 새 탭 이동
+**의도/목적**:
+- 3Pack 번들 상품 홍보를 위한 배너 노출
+- YouTube 우회 링크를 제거하고 TVING 실제 콘텐츠 페이지로 직접 연결하여 사용자 경험 개선
 **영향도**:
-- 직접 영향: src/App.jsx (SHOWS 매핑, Hero Banner, 클립/쇼츠 카드, 모달 버튼)
-- 연관 영향: 클릭 UX — 클립/쇼츠 카드가 내부 모달 대신 TVING 새 탭으로 이동
+- 직접 영향: src/App.jsx (SHOWS 매핑 로직, Hero Banner, 클립/쇼츠 카드, 상세 모달, 3Pack 배너)
+- 연관 영향: 클릭 UX 전면 변경 — 클립/쇼츠가 내부 모달 대신 TVING 새 탭으로 이동
 **관련 커밋**: d43a30b
 
 ---
 
 ### [2026-03-01] feat: 명장면 모드 미니게임 + 회원/랭킹 시스템 추가
-**작업 내용**:
-- **회원 시스템**: localStorage 기반 MVP 회원 시스템 구현. 첫 방문 시 랜덤 닉네임(형용사+동물 조합, 15x15=225가지) + 동물 이모지 아바타 자동 생성. 웰컴 포인트 120P 자동 지급. 웹/앱 데이터가 지워지기 전까지 유지.
-- **레벨 시스템**: 6단계 레벨 (🌱뉴비 → ⭐루키 → 🔥챌린저 → 💎마스터 → 👑레전드 → 🏆티빙킹). 누적 포인트(totalPt) 기반, 감소 없음.
-- **명장면 모드 게임**: 객관식 4지선다 퀴즈. TVING CDN 실제 이미지 15문제풀에서 랜덤 6문제 추출. 3가지 유형 (프로그램 맞추기 / 출연진 맞추기 / 상황 맞추기). 정답당 13P, 최대 78P.
-- **랭킹 보드**: TOP 3 포디움 + 15명 가짜유저와 실제유저 혼합 정렬. 실제 유저 "(나)" 노란색 하이라이트.
-- **게임 히스토리**: 게임 타입 아이콘 + 점수 + 정답률 + 상대시간 표시.
-- **MY 탭 리빌드**: 프로필 카드, 레벨 프로그레스바, 랭킹 보드, 게임 기록, 구매 콘텐츠.
-- **헤더 업데이트**: 아바타 + 닉네임 + 레벨뱃지 + 포인트 표시.
-- **rew 함수 확장**: `rew(pts, gameType, extra)` 시그니처로 변경, Quiz/Roulette도 업데이트.
-
-**의도/목적**: 사용자 참여도를 높이기 위한 회원/랭킹 시스템과 새로운 미니게임 추가. 백엔드 없이 localStorage MVP로 빠르게 검증.
-
+**작업 내용**: 명장면 매칭 미니게임 구현, 회원/랭킹 시스템 추가
+**의도/목적**: 미구현이던 미니게임 기능 확장
 **영향도**:
-- 직접 영향: `src/App.jsx` (+278줄, -22줄), `.claude/launch.json` (autoPort 설정)
-- 연관 영향:
-  - 기존 Quiz 컴포넌트: `onRew` 호출 시 `("quiz", {correct, total})` 파라미터 추가
-  - 기존 Roulette 컴포넌트: `onRew` 호출 시 `("roulette")` 파라미터 추가
-  - 기존 로그인/로그아웃: localStorage 기반으로 전환, 기존 모달 로그인 제거
-  - MY 탭: 전체 리빌드 (기존 구매 콘텐츠 + 구독권 UI 유지)
-  - 헤더: 로그인 버튼 → 프로필 표시로 변경
-  - GAMES 배열: "명장면 매칭" → "명장면 모드"로 이름/아이콘/설명 변경
-
+- 직접 영향: src/App.jsx
 **관련 커밋**: 1827f00
 
 ---
 
-### [2026-03-01] fix: merge conflict 해결 (3Pack Banner 유지)
-**작업 내용**: main 브랜치와 merge 시 발생한 충돌 해결. main에 추가된 3Pack Banner (Disney+/TVING/Wavve) 코드를 유지.
-**의도/목적**: PR 머지를 위한 충돌 해결. main의 3Pack Banner 기능 보존.
+### [2026-03-01] feat: add 야옹이 키우기 cat-raising game
+**작업 내용**: 미니게임에 야옹이 키우기(고양이 육성) 게임 추가
+**의도/목적**: 미니게임 라인업 확대
 **영향도**:
-- 직접 영향: `src/App.jsx` (충돌 구간: Quick Menu와 인기 VOD 사이)
-- 연관 영향: 없음 (기능 변경 없이 코드 병합만 수행)
-**관련 커밋**: 60bc0b2
+- 직접 영향: src/App.jsx
+**관련 커밋**: d63eb6f
+
+---
+
+### [2026-03-01] chore: merge conflicts 해결 및 헤더 로고 개선
+**작업 내용**:
+1. origin/main과 feature/dev 간 App.jsx 머지 충돌 해결 (3Pack 배너 유지)
+2. 헤더의 TVING 텍스트 로고 → `/tving-logo.svg` 이미지 로고로 교체
+3. 헤더 로고 클릭 시 홈 탭으로 이동하는 네비게이션 추가
+**의도/목적**: 브랜치 간 충돌 정리 및 헤더 UI 개선
+**영향도**:
+- 직접 영향: src/App.jsx (헤더 영역)
+- 연관 영향: public/tving-logo.svg 파일 필요
+**관련 커밋**: 60bc0b2, 9e2075c

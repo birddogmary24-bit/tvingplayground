@@ -98,3 +98,41 @@
 - 직접 영향: src/App.jsx (헤더 영역)
 - 연관 영향: public/tving-logo.svg 파일 필요
 **관련 커밋**: 60bc0b2, 9e2075c
+
+---
+
+### [2026-03-01] feat: PWA 적용 + 끝말잇기 미니게임 구현
+**작업 내용**:
+
+**PWA 인프라**
+1. `vite-plugin-pwa` 설치 및 `vite.config.js` VitePWA 플러그인 설정
+   - manifest: name "TVING 놀이터", theme_color #FF2D55, display standalone, lang ko
+   - workbox 런타임 캐싱: Google Fonts(CacheFirst), TVING CDN 이미지(CacheFirst, 30일)
+2. `index.html` Apple PWA 메타 태그 추가 (apple-mobile-web-app-capable 등)
+3. `vercel.json` Service Worker 캐시 헤더 추가 (`Cache-Control: public, max-age=0, must-revalidate`)
+4. `scripts/generate-icons.js` 신규 생성 — Node.js SVG 아이콘 생성 스크립트
+5. `public/pwa-192x192.svg`, `public/pwa-512x512.svg`, `public/apple-touch-icon.svg` 생성
+
+**끝말잇기 게임 (WordChain)**
+1. `src/App.jsx`에 WordChain 컴포넌트 삽입 (~180줄)
+   - ~200개 단어 DB (`WC_WORDS`): TVING 제목 7개, 드라마/예능 제목 60개, 일반 명사 130개
+   - `WC_IDX` 해시맵: 첫 글자별 O(1) 빠른 검색
+   - AI 난이도 스케일링: 1-3라운드 랜덤 → 4-6라운드 TVING 우선 → 7라운드+ Greedy
+   - 채팅 UI (ready/playing/done 3단계), 15초 타이머, 자동 스크롤
+   - 점수 공식: `min(10 + round * 5, 40)` — 최대 40P
+2. 게임 라우팅 연결 (GAME_ICONS/GAME_NAMES 맵 + 클릭 핸들러)
+
+**버그 수정**
+- AI 턴 무한 대기 버그: `aiThinking`을 `useEffect` deps에서 제거하고 `useRef(false)` 가드로 교체
+- 막힌 단어(친애하는 "는"으로 끝남) 제거 + 브릿지 단어 ~30개 추가 + 스타터 필터링
+
+**의도/목적**:
+- PWA: 모바일 홈 화면 설치 지원, 오프라인 캐싱, iOS Apple Touch Icon 지원
+- 끝말잇기: "곧 오픈!" 스텁으로만 존재하던 게임 콘텐츠를 실제 구현하여 미니게임 라인업 완성
+
+**영향도**:
+- 직접 영향: `vite.config.js`, `index.html`, `vercel.json`, `package.json`, `src/App.jsx`
+- 신규 파일: `scripts/generate-icons.js`, `public/pwa-192x192.svg`, `public/pwa-512x512.svg`, `public/apple-touch-icon.svg`
+- 연관 영향: Vercel 빌드 시 `dist/sw.js`, `dist/manifest.webmanifest`, `dist/registerSW.js` 자동 생성
+
+**관련 커밋**: 9b35d7c (PR #10, merged to main)

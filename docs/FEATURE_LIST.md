@@ -1,6 +1,6 @@
 # FEATURE LIST
 
-> 최종 업데이트: 2026-03-01
+> 최종 업데이트: 2026-03-01 (PWA + 끝말잇기 추가)
 
 ---
 
@@ -46,9 +46,17 @@
 - **피드백**: 정답 초록(#34C759)/오답 빨강(#FF2D55) 하이라이트 → 0.7초 후 전환
 - **프로그레스바**: 보라색(#5856D6), 문제 진행률 표시
 
-#### 4.4 끝말잇기
-- 드라마 제목 잇기 (미구현, 스텁만 존재)
-- 40P 표시
+#### 4.4 끝말잇기 ✨ NEW
+- **형식**: 채팅 UI 기반 1:1 AI 대결 (ready → playing → done 3단계)
+- **단어 DB**: ~200단어 (`WC_WORDS`) — TVING 제목 7개, 드라마/예능 60개, 일반 명사 130개
+  - `WC_IDX` 해시맵으로 첫 글자별 O(1) 검색
+- **AI 난이도 스케일링**:
+  - 1~3라운드: 랜덤 선택
+  - 4~6라운드: TVING/드라마 카테고리 우선
+  - 7라운드+: Greedy (상대 후속 단어가 가장 적은 단어 선택)
+- **제약 조건**: 15초 타이머, 2글자 이상, 동일 단어 재사용 금지
+- **점수 체계**: `min(10 + round * 5, 40)` — 최대 40P
+- **데드엔드 방지**: AI 스타터 필터링 + 브릿지 단어 ~30개
 
 ### 5. 회원 시스템 ✨ NEW
 - **자동 가입**: 첫 방문 시 랜덤 프로필 자동 생성
@@ -101,10 +109,22 @@
 - 아바타 + 닉네임 + 레벨뱃지 + 포인트 표시
 - 로그아웃 버튼
 
+### 15. PWA (Progressive Web App) ✨ NEW
+- **설치 지원**: Web App Manifest (`manifest.webmanifest`) — 홈 화면 추가 가능
+- **Service Worker**: Workbox 기반 자동 캐싱 (`vite-plugin-pwa`, `registerType: 'autoUpdate'`)
+- **정적 에셋 캐싱**: JS/CSS/HTML/SVG/폰트 프리캐싱
+- **런타임 캐싱**:
+  - Google Fonts: CacheFirst (1년)
+  - TVING CDN 이미지 (`image.tving.com`): CacheFirst (30일, 최대 100개)
+- **iOS 지원**: Apple Touch Icon, `apple-mobile-web-app-capable`, status bar 스타일
+- **앱 아이콘**: SVG 기반 TVING 브랜딩 (192x192, 512x512, 180x180)
+  - 검정 배경 + TVING Red (#FF2D55) 텍스트
+  - `scripts/generate-icons.js`로 자동 생성
+- **Vercel SW 헤더**: `Cache-Control: public, max-age=0, must-revalidate` (SW 파일 즉시 갱신)
+
 ---
 
 ## 미구현 / 향후 계획
-- 끝말잇기 게임 (스텁만 존재)
 - 서버 기반 회원 시스템 (OAuth, DB)
 - 크로스 디바이스 데이터 동기화
 - 주간/월간 랭킹 리셋

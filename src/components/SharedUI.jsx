@@ -1,0 +1,7 @@
+import Ic from "../Icons.jsx";
+
+export const SH=({t,s,onMore})=><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"4px 16px 10px"}}><div><div style={{fontSize:17,fontWeight:700,color:"#fff"}}>{t}</div>{s&&<div style={{fontSize:12,color:"#888",marginTop:1}}>{s}</div>}</div>{onMore&&<button onClick={onMore} style={{background:"none",border:"none",color:"#888",fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",gap:2}}>더보기<Ic.Arr /></button>}</div>;
+
+export const PlayBtn=({size=32})=><div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:size,height:size,background:"rgba(0,0,0,0.5)",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(4px)",border:"1px solid rgba(255,255,255,0.2)"}}><Ic.Play /></div>;
+
+export const Modal=({children,onClose:c})=><div style={{position:"fixed",inset:0,zIndex:200,background:"rgba(0,0,0,0.85)",display:"flex",alignItems:"flex-end",justifyContent:"center"}} onClick={c}><div style={{width:"100%",maxWidth:430,maxHeight:"90vh",background:"#1C1C1E",borderRadius:"20px 20px 0 0",overflow:"auto"}} onClick={e=>e.stopPropagation()}><div style={{display:"flex",justifyContent:"flex-end",padding:"12px 16px 0"}}><button onClick={c} style={{background:"#333",border:"none",width:32,height:32,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"#fff"}}><Ic.X /></button></div>{children}</div></div>;

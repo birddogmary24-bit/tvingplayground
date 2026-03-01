@@ -854,7 +854,7 @@ export default function App() {
         {/* Games */}
         <SH t="🎮 미니게임" s="게임하고 포인트!" onMore={()=>sTab("game")} />
         <div style={{display:"flex",gap:10,overflowX:"auto",padding:"0 16px 20px"}}>
-          {GAMES.slice(0,3).map(g=><button key={g.id} onClick={()=>{if(g.id==="quiz"||g.id==="roulette"||g.id==="memory"){sGm(g.id);sTab("game");}else tt("곧 오픈! 🎮");}} style={{minWidth:150,background:`linear-gradient(135deg,${g.c}22,#1C1C1E)`,border:`1px solid ${g.c}33`,borderRadius:14,padding:14,textAlign:"left",cursor:"pointer",flexShrink:0}}>
+          {GAMES.slice(0,3).map(g=><button key={g.id} onClick={()=>{if(g.id==="quiz"||g.id==="roulette"||g.id==="memory"||g.id==="catgame"){sGm(g.id);sTab("game");}else tt("곧 오픈! 🎮");}} style={{minWidth:150,background:`linear-gradient(135deg,${g.c}22,#1C1C1E)`,border:`1px solid ${g.c}33`,borderRadius:14,padding:14,textAlign:"left",cursor:"pointer",flexShrink:0}}>
             <span style={{fontSize:28}}>{g.icon}</span><div style={{fontSize:13,fontWeight:600,color:"#fff",marginTop:8}}>{g.name}</div><div style={{display:"flex",alignItems:"center",gap:4,marginTop:4}}><Ic.Coin /><span style={{fontSize:11,color:"#FFD60A"}}>최대 {g.pts}P</span></div>
           </button>)}
         </div>

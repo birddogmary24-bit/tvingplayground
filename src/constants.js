@@ -59,8 +59,8 @@ export const FAKE_USERS = [
 ];
 
 // ─── 게임 메타 ─────────────────────────────────────────────
-export const GAME_ICONS = { quiz:"🧩", roulette:"🎰", famousscene:"🎬" };
-export const GAME_NAMES = { quiz:"캐릭터 퀴즈", roulette:"추천 룰렛", famousscene:"명장면 모드" };
+export const GAME_ICONS = { quiz:"🧩", roulette:"🎰", famousscene:"🎬", wordchain:"💬" };
+export const GAME_NAMES = { quiz:"캐릭터 퀴즈", roulette:"추천 룰렛", famousscene:"명장면 모드", wordchain:"끝말잇기" };
 
 export const GAMES = [
   { id:"catgame", name:"야옹이 키우기", desc:"고양이를 키워보세요!", icon:"🐱", pts:0, c:"#FF69B4" },

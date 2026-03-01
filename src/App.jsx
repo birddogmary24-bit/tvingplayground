@@ -156,15 +156,14 @@ export default function App() {
 
         {/* Clips */}
         <SH t="🎬 클립" s="놓치면 아쉬운 명장면" onMore={()=>sTab("clip")} />
-        <div style={{display:"flex",gap:10,overflowX:"auto",padding:"0 16px 20px"}}>
+        <div style={{display:"flex",gap:24,overflowX:"auto",padding:"0 16px 20px"}}>
           {SHOWS.flatMap(s=>s.clips.map((c,i)=>({...c,show:s,key:`${s.id}c${i}`}))).slice(0,8).map(it=><div key={it.key} style={{minWidth:220,flexShrink:0,cursor:"pointer"}} onClick={()=>{addRedPill();it.url?window.open(it.url,'_blank','noopener,noreferrer'):sDet(it.show);}}>
             <div style={{width:220,height:124,borderRadius:10,overflow:"hidden",position:"relative"}}>
               <ShowImage src={it.thumb || it.show.posterImage} title={it.t} color={it.show.tc}>
-                <div style={{position:"absolute",inset:0,background:"linear-gradient(transparent 30%,rgba(0,0,0,0.8))"}} />
                 <PlayBtn size={36} />
-                <div style={{position:"absolute",bottom:0,left:0,right:0,padding:"16px 10px 8px",zIndex:2}}><div style={{fontSize:12,color:"#fff",fontWeight:500,textShadow:"0 1px 3px #000"}}>{it.t}</div><div style={{fontSize:10,color:"#bbb"}}>{it.show.title} · {it.e}</div></div>
               </ShowImage>
             </div>
+            <div style={{padding:"10px 0 0"}}><div style={{fontSize:12,color:"#fff",fontWeight:500,lineHeight:1.4,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{it.t}</div><div style={{fontSize:10,color:"#888",marginTop:4}}>{it.show.title} · {it.e}</div></div>
           </div>)}
         </div>
 
@@ -186,7 +185,7 @@ export default function App() {
 
       {/* ═══ CLIP ═══ */}
       {tab==="clip"&&<div style={{paddingBottom:80}}><div style={{padding:"0 16px 12px"}}><div style={{fontSize:20,fontWeight:700}}>클립</div><div style={{fontSize:13,color:"#888",marginTop:2}}>가로형 하이라이트</div></div>
-        <div style={{display:"flex",flexDirection:"column",gap:12,padding:"0 16px"}}>{SHOWS.flatMap(s=>s.clips.map((c,i)=>({...c,show:s,key:`${s.id}c${i}`}))).map(it=><div key={it.key} style={{cursor:"pointer"}} onClick={()=>{addRedPill();tt("💊 빨간약 +1!");it.url?window.open(it.url,'_blank','noopener,noreferrer'):sDet(it.show);}}><div style={{width:"100%",aspectRatio:"16/9",borderRadius:12,overflow:"hidden",position:"relative"}}><ShowImage src={it.thumb || it.show.posterImage} title={it.t} color={it.show.tc}><div style={{position:"absolute",inset:0,background:"linear-gradient(transparent 30%,rgba(0,0,0,0.8))"}}/><PlayBtn size={48}/><div style={{position:"absolute",bottom:0,left:0,right:0,padding:"24px 12px 10px",zIndex:2}}><div style={{fontSize:14,fontWeight:600,color:"#fff",textShadow:"0 1px 4px #000"}}>{it.t}</div><div style={{fontSize:12,color:"#bbb",marginTop:2}}>{it.show.title} · {it.e}</div></div></ShowImage></div></div>)}</div>
+        <div style={{display:"flex",flexDirection:"column",gap:32,padding:"0 16px"}}>{SHOWS.flatMap(s=>s.clips.map((c,i)=>({...c,show:s,key:`${s.id}c${i}`}))).map(it=><div key={it.key} style={{cursor:"pointer"}} onClick={()=>{addRedPill();tt("💊 빨간약 +1!");it.url?window.open(it.url,'_blank','noopener,noreferrer'):sDet(it.show);}}><div style={{width:"100%",aspectRatio:"16/9",borderRadius:12,overflow:"hidden",position:"relative"}}><ShowImage src={it.thumb || it.show.posterImage} title={it.t} color={it.show.tc}><PlayBtn size={48}/></ShowImage></div><div style={{padding:"12px 0 0"}}><div style={{fontSize:14,fontWeight:600,color:"#fff",lineHeight:1.4}}>{it.t}</div><div style={{fontSize:12,color:"#888",marginTop:4}}>{it.show.title} · {it.e}</div></div></div>)}</div>
       </div>}
 
       {/* ═══ GAME ═══ */}

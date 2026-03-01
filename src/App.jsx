@@ -15,6 +15,66 @@ const SHOWS = SHOWS_RAW.map(s => ({
   shorts: s.shorts.map(sh => ({ t: sh.title, thumb: sh.shortsThumbnail })),
 }));
 
+// ─── localStorage 헬퍼 ──────────────────────────────────────
+const LS_KEY = "tving_user";
+const loadUser = () => { try { return JSON.parse(localStorage.getItem(LS_KEY)); } catch { return null; } };
+const saveUser = u => localStorage.setItem(LS_KEY, JSON.stringify(u));
+
+// ─── 닉네임 풀 & 프로필 생성 ─────────────────────────────────
+const NICK_ADJ = ["행복한","용감한","빠른","귀여운","멋진","신비한","당당한","재밌는","따뜻한","반짝이는","배고픈","졸린","활발한","현명한","유쾌한"];
+const NICK_NOUN = ["곰","사자","토끼","펭귄","고양이","강아지","여우","올빼미","코알라","판다","호랑이","돌고래","다람쥐","수달","너구리"];
+const AVATARS = ["🐻","🦁","🐰","🐧","🐱","🐶","🦊","🦉","🐨","🐼","🐯","🐬","🐿️","🦦","🦝"];
+function generateUser() {
+  const ai = Math.floor(Math.random() * NICK_ADJ.length);
+  const ni = Math.floor(Math.random() * NICK_NOUN.length);
+  return { id:"usr_"+Math.random().toString(16).slice(2,8), nickname:NICK_ADJ[ai]+NICK_NOUN[ni], avatar:AVATARS[ni], totalPt:120, gamesPlayed:0, history:[] };
+}
+
+// ─── 레벨 시스템 ─────────────────────────────────────────────
+const LEVELS = [
+  { lv:1, min:0,    name:"뉴비",   badge:"🌱", c:"#8E8E93" },
+  { lv:2, min:100,  name:"루키",   badge:"⭐", c:"#34C759" },
+  { lv:3, min:300,  name:"챌린저", badge:"🔥", c:"#FF9500" },
+  { lv:4, min:600,  name:"마스터", badge:"💎", c:"#5856D6" },
+  { lv:5, min:1000, name:"레전드", badge:"👑", c:"#FFD60A" },
+  { lv:6, min:2000, name:"티빙킹", badge:"🏆", c:"#FF2D55" },
+];
+function getLevel(tp) { for(let i=LEVELS.length-1;i>=0;i--) if(tp>=LEVELS[i].min) return LEVELS[i]; return LEVELS[0]; }
+function getLvProgress(tp) {
+  const cur=getLevel(tp); const idx=LEVELS.findIndex(l=>l.lv===cur.lv); const next=LEVELS[idx+1];
+  if(!next) return {cur,next:null,pct:100};
+  return {cur,next,pct:Math.floor(((tp-cur.min)/(next.min-cur.min))*100)};
+}
+
+// ─── 가짜 유저 (랭킹용) ──────────────────────────────────────
+const FAKE_USERS = [
+  { id:"bot_01", nickname:"빠른사자",      avatar:"🦁", totalPt:1850 },
+  { id:"bot_02", nickname:"용감한독수리",  avatar:"🦅", totalPt:1420 },
+  { id:"bot_03", nickname:"귀여운판다",    avatar:"🐼", totalPt:1100 },
+  { id:"bot_04", nickname:"신비한올빼미",  avatar:"🦉", totalPt:980  },
+  { id:"bot_05", nickname:"멋진호랑이",    avatar:"🐯", totalPt:850  },
+  { id:"bot_06", nickname:"재밌는돌고래",  avatar:"🐬", totalPt:720  },
+  { id:"bot_07", nickname:"당당한여우",    avatar:"🦊", totalPt:650  },
+  { id:"bot_08", nickname:"활발한토끼",    avatar:"🐰", totalPt:500  },
+  { id:"bot_09", nickname:"따뜻한코알라",  avatar:"🐨", totalPt:430  },
+  { id:"bot_10", nickname:"반짝이는고양이",avatar:"🐱", totalPt:350  },
+  { id:"bot_11", nickname:"현명한수달",    avatar:"🦦", totalPt:280  },
+  { id:"bot_12", nickname:"유쾌한너구리",  avatar:"🦝", totalPt:200  },
+  { id:"bot_13", nickname:"배고픈강아지",  avatar:"🐶", totalPt:120  },
+  { id:"bot_14", nickname:"졸린펭귄",      avatar:"🐧", totalPt:60   },
+  { id:"bot_15", nickname:"행복한다람쥐",  avatar:"🐿️", totalPt:30   },
+];
+
+// ─── 상대 시간 ──────────────────────────────────────────────
+const relTime = ts => {
+  const d=Date.now()-ts;
+  if(d<60000) return "방금 전"; if(d<3600000) return `${Math.floor(d/60000)}분 전`;
+  if(d<86400000) return `${Math.floor(d/3600000)}시간 전`; if(d<604800000) return `${Math.floor(d/86400000)}일 전`;
+  return new Date(ts).toLocaleDateString("ko-KR");
+};
+const GAME_ICONS = { quiz:"🧩", roulette:"🎰", famousscene:"🎬" };
+const GAME_NAMES = { quiz:"캐릭터 퀴즈", roulette:"추천 룰렛", famousscene:"명장면 모드" };
+
 // ─── FALLBACK POSTER (high quality SVG) ─────────────────────────
 function FallbackPoster({ title, genre, color, style }) {
   const s = title.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
@@ -83,7 +143,7 @@ function ShowImage({ src, title, genre, color, style, children }) {
 const GAMES = [
   { id:"quiz", name:"캐릭터 퀴즈", desc:"환승연애4 퀴즈", icon:"🧩", pts:50, c:"#FF2D55" },
   { id:"roulette", name:"추천 룰렛", desc:"랜덤 콘텐츠 추천", icon:"🎰", pts:30, c:"#FF9500" },
-  { id:"memory", name:"명장면 매칭", desc:"카드 뒤집기 게임", icon:"🃏", pts:80, c:"#5856D6" },
+  { id:"memory", name:"명장면 모드", desc:"장면 보고 맞추기", icon:"🎬", pts:80, c:"#5856D6" },
   { id:"wordchain", name:"끝말잇기", desc:"드라마 제목 잇기", icon:"💬", pts:40, c:"#34C759" },
 ];
 
@@ -124,32 +184,117 @@ const Ic={
 function Quiz({ onDone, onRew }) {
   const qs=[{q:"환승연애4 최종 재회 커플이 아닌 조합은?",o:["우진&지연","원규&지현","백현&윤녕","유식&현지"],a:2},{q:"친애하는X 주연 배우는?",o:["한소희","김유정","수지","아이유"],a:1},{q:"유퀴즈온더블럭 MC는?",o:["이경규&강호동","유재석&조세호","신동엽&이수근","전현무&이시언"],a:1},{q:"쇼미더머니의 장르는?",o:["트로트","록","힙합","발라드"],a:2}];
   const [i,sI]=useState(0);const [sc,sSc]=useState(0);const [sel,sSel]=useState(null);const [dn,sDn]=useState(false);
-  const pick=k=>{if(sel!==null)return;sSel(k);const ok=k===qs[i].a;if(ok)sSc(s=>s+1);setTimeout(()=>{if(i<qs.length-1){sI(i+1);sSel(null);}else{sDn(true);onRew(sc*15+(ok?15:0));}},700);};
+  const pick=k=>{if(sel!==null)return;sSel(k);const ok=k===qs[i].a;if(ok)sSc(s=>s+1);setTimeout(()=>{if(i<qs.length-1){sI(i+1);sSel(null);}else{sDn(true);onRew(sc*15+(ok?15:0),"quiz",{correct:sc+(ok?1:0),total:qs.length});}},700);};
   if(dn)return<div style={{padding:24,textAlign:"center"}}><div style={{fontSize:48,marginBottom:16}}>🎉</div><div style={{fontSize:22,fontWeight:700,color:"#fff",marginBottom:8}}>퀴즈 완료!</div><div style={{fontSize:16,color:"#aaa",marginBottom:16}}>{qs.length}문제 중 {sc}문제 정답</div><div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:24}}><Ic.Coin /><span style={{fontSize:20,fontWeight:700,color:"#FFD60A"}}>+{sc*15}P</span></div><button onClick={onDone} style={{padding:"12px 32px",background:"#FF2D55",color:"#fff",border:"none",borderRadius:12,fontSize:16,fontWeight:600,cursor:"pointer"}}>돌아가기</button></div>;
   return<div style={{padding:20}}><div style={{display:"flex",justifyContent:"space-between",marginBottom:16}}><span style={{color:"#aaa",fontSize:14}}>{i+1}/{qs.length}</span><div style={{display:"flex",alignItems:"center",gap:4}}><Ic.Coin /><span style={{color:"#FFD60A",fontWeight:600}}>{sc*15}P</span></div></div><div style={{width:"100%",height:4,background:"#333",borderRadius:2,marginBottom:24}}><div style={{width:`${((i+1)/qs.length)*100}%`,height:"100%",background:"#FF2D55",borderRadius:2,transition:"width .3s"}}/></div><div style={{fontSize:18,fontWeight:600,color:"#fff",marginBottom:24,lineHeight:1.5}}>{qs[i].q}</div><div style={{display:"flex",flexDirection:"column",gap:10}}>{qs[i].o.map((op,k)=>{let bg="#1C1C1E",bd="1px solid #333";if(sel!==null){if(k===qs[i].a){bg="rgba(52,199,89,.15)";bd="1px solid #34C759";}else if(k===sel){bg="rgba(255,45,85,.15)";bd="1px solid #FF2D55";}}return<button key={k} onClick={()=>pick(k)} style={{padding:"14px 16px",background:bg,border:bd,borderRadius:12,color:"#fff",fontSize:15,textAlign:"left",cursor:"pointer"}}><span style={{fontWeight:600,marginRight:10,color:"#888"}}>{String.fromCharCode(65+k)}</span>{op}</button>;})}</div></div>;
 }
 
 function Roulette({ onDone, onRew }) {
   const [sp,sSp]=useState(false);const [res,sRes]=useState(null);
-  const go=()=>{if(sp)return;sSp(true);setTimeout(()=>{sRes(SHOWS[Math.floor(Math.random()*SHOWS.length)]);sSp(false);onRew(30);},2000);};
+  const go=()=>{if(sp)return;sSp(true);setTimeout(()=>{sRes(SHOWS[Math.floor(Math.random()*SHOWS.length)]);sSp(false);onRew(30,"roulette");},2000);};
   return<div style={{padding:24,textAlign:"center"}}><div style={{width:200,height:200,margin:"0 auto 24px",borderRadius:"50%",border:"4px solid #FF9500",display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",background:sp?"conic-gradient(#FF2D55,#FF9500,#FFD60A,#34C759,#5856D6,#FF2D55)":"#1C1C1E",animation:sp?"rl .5s linear infinite":"none"}}><style>{`@keyframes rl{from{transform:rotate(0)}to{transform:rotate(360deg)}}`}</style>{res&&!sp?<div style={{background:"#1C1C1E",borderRadius:"50%",width:160,height:160,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}><div style={{fontSize:14,color:"#aaa"}}>오늘의 추천</div><div style={{fontSize:18,fontWeight:700,color:"#fff",marginTop:4}}>{res.title}</div></div>:!sp?<div style={{background:"#1C1C1E",borderRadius:"50%",width:160,height:160,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:40}}>🎰</span></div>:null}</div>{res&&!sp&&<div style={{marginBottom:16}}><div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:12}}><Ic.Coin /><span style={{color:"#FFD60A",fontWeight:700}}>+30P</span></div></div>}<button onClick={res?onDone:go} style={{marginTop:12,padding:"12px 32px",background:res?"#333":"#FF9500",color:"#fff",border:"none",borderRadius:12,fontSize:16,fontWeight:600,cursor:"pointer"}}>{sp?"돌리는 중...":res?"돌아가기":"룰렛 돌리기!"}</button></div>;
+}
+
+// ─── 명장면 모드 (객관식 4지선다) ────────────────────────────────
+function FamousScene({ onDone, onRew }) {
+  const allQ = [
+    // show 타입: 이 장면은 어떤 프로그램?
+    { img:"https://image.tving.com/ntgs/news/clip/20260129123142/thumbnail/L00000276855.png",
+      q:"이 장면은 어떤 프로그램인가요?", o:["환승연애4","친애하는X","우주를 줄게","대탈출 더스토리"], a:0 },
+    { img:"https://image.tving.com/ntgs/news/clip/20250802131121/thumbnail/L00000026436.png",
+      q:"이 장면은 어떤 프로그램인가요?", o:["유퀴즈온더블럭","쇼미더머니12","대탈출 더스토리","환승연애4"], a:2 },
+    { img:"https://image.tving.com/ntgs/contents/CTC/caip/CAIP0900/ko/20251021/1250/P001776344.jpg",
+      q:"이 장면은 어떤 드라마인가요?", o:["판사 이한영","우주를 줄게","친애하는X","환승연애4"], a:2 },
+    { img:"https://image.tving.com/ntgs/contents/CTC/caip/CAIP0900/ko/20251205/0815/P001780004.jpg",
+      q:"이 장면은 어떤 드라마인가요?", o:["친애하는X","우주를 줄게","쇼미더머니12","판사 이한영"], a:3 },
+    { img:"https://image.tving.com/ntgs/contents/CTC/caip/CAIP0900/ko/20260128/0816/P001782227.jpg",
+      q:"이 장면은 어떤 드라마인가요?", o:["환승연애4","우주를 줄게","친애하는X","판사 이한영"], a:1 },
+    // cast 타입: 출연진 맞추기
+    { img:"https://image.tving.com/ntgs/news/clip/20260227005650/thumbnail/L00000292254.png",
+      q:"유퀴즈온더블럭의 MC 조합은?", o:["유재석&조세호","강호동&이수근","신동엽&전현무","이경규&유세윤"], a:0 },
+    { img:"https://image.tving.com/ntgs/contents/CTC/caip/CAIP0200/ko/20251021/1250/P001776344.jpg",
+      q:"친애하는X의 주연 배우는?", o:["한소희","수지","김유정","아이유"], a:2 },
+    { img:"https://image.tving.com/ntgs/contents/CTC/caip/CAIP0200/ko/20251205/0815/P001780004.jpg",
+      q:"판사 이한영 역을 맡은 배우는?", o:["이종석","지성","남궁민","조승우"], a:1 },
+    { img:"https://image.tving.com/ntgs/news/clip/20250802130921/thumbnail/L00000026432.png",
+      q:"대탈출에서 '에이스 듀오'로 불리는 조합은?", o:["강호동&김동현","유병재&여진구","백현&고경표","김동현&유병재"], a:2 },
+    { img:"https://image.tving.com/ntgs/contents/CTC/caip/CAIP0200/ko/20260128/0816/P001782227.jpg",
+      q:"우주를 줄게의 남자 주인공은?", o:["박서함","배인혁","김영대","김도훈"], a:1 },
+    // desc 타입: 상황 맞추기
+    { img:"https://image.tving.com/ntgs/news/clip/20260129120933/thumbnail/L00000276847.png",
+      q:"환승연애4에서 이 장면의 상황은?", o:["최종 선택의 순간","7살 차이 친구의 대화","첫 만남 입주 날","진실 게임 타임"], a:1 },
+    { img:"https://image.tving.com/ntgs/news/clip/20250726154206/thumbnail/L00000022236.png",
+      q:"대탈출에서 이 장면의 상황은?", o:["먹방 타임","후일담 버스 토크","첫 화 맹활약 추리","무당집 탈출"], a:2 },
+    { img:"https://image.tving.com/ntgs/news/clip/20260214014749/thumbnail/L00000285830.png",
+      q:"쇼미더머니12에서 이 장면은?", o:["60초 랩 미션","4:4 팀 미션","송캠프 듀엣","프로듀서 선택"], a:1 },
+    { img:"https://image.tving.com/ntgs/news/clip/20260122154905/thumbnail/L00000273076.png",
+      q:"환승연애4 이 장면의 분위기는?", o:["즐거운 파티","아쉬운 이별","힘들었던 감정 토로","설레는 첫 만남"], a:2 },
+    { img:"https://image.tving.com/ntgs/news/clip/20250816193508/thumbnail/L00000033831.jpg",
+      q:"대탈출 더스토리 이 장면은?", o:["탈출 성공 순간","무서운 함정","후일담 버스 토크","조선시대 미션"], a:2 },
+  ];
+
+  const [qs] = useState(() => [...allQ].sort(() => Math.random() - 0.5).slice(0, 6));
+  const [i, sI] = useState(0);
+  const [sc, sSc] = useState(0);
+  const [sel, sSel] = useState(null);
+  const [dn, sDn] = useState(false);
+
+  const pick = k => {
+    if (sel !== null) return;
+    sSel(k);
+    const ok = k === qs[i].a;
+    if (ok) sSc(s => s + 1);
+    setTimeout(() => {
+      if (i < qs.length - 1) { sI(i + 1); sSel(null); }
+      else { sDn(true); onRew(sc * 13 + (ok ? 13 : 0), "famousscene", { correct: sc + (ok ? 1 : 0), total: qs.length }); }
+    }, 700);
+  };
+
+  if (dn) return (
+    <div style={{ padding: 24, textAlign: "center" }}>
+      <div style={{ fontSize: 48, marginBottom: 16 }}>🎬</div>
+      <div style={{ fontSize: 22, fontWeight: 700, color: "#fff", marginBottom: 8 }}>명장면 모드 완료!</div>
+      <div style={{ fontSize: 16, color: "#aaa", marginBottom: 16 }}>{qs.length}문제 중 {sc}문제 정답</div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 24 }}>
+        <Ic.Coin /><span style={{ fontSize: 20, fontWeight: 700, color: "#FFD60A" }}>+{sc * 13}P</span>
+      </div>
+      <button onClick={onDone} style={{ padding: "12px 32px", background: "#FF2D55", color: "#fff", border: "none", borderRadius: 12, fontSize: 16, fontWeight: 600, cursor: "pointer" }}>돌아가기</button>
+    </div>
+  );
+
+  return (
+    <div style={{ padding: 20 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
+        <span style={{ color: "#aaa", fontSize: 14 }}>{i + 1}/{qs.length}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 4 }}><Ic.Coin /><span style={{ color: "#FFD60A", fontWeight: 600 }}>{sc * 13}P</span></div>
+      </div>
+      <div style={{ width: "100%", height: 4, background: "#333", borderRadius: 2, marginBottom: 16 }}>
+        <div style={{ width: `${((i + 1) / qs.length) * 100}%`, height: "100%", background: "#5856D6", borderRadius: 2, transition: "width .3s" }} />
+      </div>
+      <div style={{ width: "100%", aspectRatio: "16/9", borderRadius: 12, overflow: "hidden", marginBottom: 16 }}>
+        <ShowImage src={qs[i].img} title="명장면" genre="" color="#5856D6" />
+      </div>
+      <div style={{ fontSize: 17, fontWeight: 600, color: "#fff", marginBottom: 16, lineHeight: 1.5 }}>{qs[i].q}</div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {qs[i].o.map((op, k) => {
+          let bg = "#1C1C1E", bd = "1px solid #333";
+          if (sel !== null) {
+            if (k === qs[i].a) { bg = "rgba(52,199,89,.15)"; bd = "1px solid #34C759"; }
+            else if (k === sel) { bg = "rgba(255,45,85,.15)"; bd = "1px solid #FF2D55"; }
+          }
+          return <button key={k} onClick={() => pick(k)} style={{ padding: "14px 16px", background: bg, border: bd, borderRadius: 12, color: "#fff", fontSize: 15, textAlign: "left", cursor: "pointer" }}>
+            <span style={{ fontWeight: 600, marginRight: 10, color: "#888" }}>{String.fromCharCode(65 + k)}</span>{op}
+          </button>;
+        })}
+      </div>
+    </div>
+  );
 }
 
 // ─── SHARED UI ──────────────────────────────────────────────────
 const SH=({t,s,onMore})=><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"4px 16px 10px"}}><div><div style={{fontSize:17,fontWeight:700,color:"#fff"}}>{t}</div>{s&&<div style={{fontSize:12,color:"#888",marginTop:1}}>{s}</div>}</div>{onMore&&<button onClick={onMore} style={{background:"none",border:"none",color:"#888",fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",gap:2}}>더보기<Ic.Arr /></button>}</div>;
 const PlayBtn=({size=32})=><div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:size,height:size,background:"rgba(0,0,0,0.5)",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(4px)",border:"1px solid rgba(255,255,255,0.2)"}}><Ic.Play /></div>;
 const Modal=({children,onClose:c})=><div style={{position:"fixed",inset:0,zIndex:200,background:"rgba(0,0,0,0.85)",display:"flex",alignItems:"flex-end",justifyContent:"center"}} onClick={c}><div style={{width:"100%",maxWidth:430,maxHeight:"90vh",background:"#1C1C1E",borderRadius:"20px 20px 0 0",overflow:"auto"}} onClick={e=>e.stopPropagation()}><div style={{display:"flex",justifyContent:"flex-end",padding:"12px 16px 0"}}><button onClick={c} style={{background:"#333",border:"none",width:32,height:32,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"#fff"}}><Ic.X /></button></div>{children}</div></div>;
-
-// ─── LOADING INDICATOR ──────────────────────────────────────────
-function ImageLoadingBanner({ loading, count, total }) {
-  if (!loading) return null;
-  return (
-    <div style={{margin:"0 16px 12px",padding:"10px 14px",background:"rgba(255,45,85,0.08)",border:"1px solid rgba(255,45,85,0.2)",borderRadius:12,display:"flex",alignItems:"center",gap:10}}>
-      <div style={{width:20,height:20,border:"2px solid #333",borderTopColor:"#FF2D55",borderRadius:"50%",animation:"spin 0.8s linear infinite",flexShrink:0}} />
-      <span style={{fontSize:12,color:"#FF8899"}}>포스터 이미지 로딩 중... ({count}/{total})</span>
-    </div>
-  );
-}
 
 // ═════════════════════════════════════════════════════════════════
 export default function App() {
@@ -164,12 +309,35 @@ export default function App() {
   const [tst,sTst]=useState(null);
   const [allM,sAllM]=useState(false);
   const [hi,sHi]=useState(0);
+  const [usr,sUsr]=useState(null);
+
+  // 유저 초기화
+  useEffect(()=>{
+    let u=loadUser();
+    if(!u){ u=generateUser(); saveUser(u); }
+    sUsr(u); sLg(true); sPt(u.totalPt);
+  },[]);
 
   const tt=m=>{sTst(m);setTimeout(()=>sTst(null),2500);};
   const buy=s=>{if(!lg){sLgM(true);return;}if(pt>=s.price){sPt(p=>p-s.price);sOwn(o=>[...o,s.id]);tt(`${s.title} 구매 완료! 🎬`);}else tt("포인트 부족 😢");};
-  const rew=r=>{if(!lg){tt("로그인하면 포인트 적립!");return;}sPt(p=>p+r);};
+
+  // 보상 함수 (히스토리 기록 포함)
+  const rew=(r,gameType,extra={})=>{
+    if(!lg){tt("로그인하면 포인트 적립!");return;}
+    sPt(p=>p+r);
+    const u=loadUser();
+    if(u){
+      u.totalPt+=r; u.gamesPlayed+=1;
+      u.history.unshift({game:gameType||"unknown",pts:r,correct:extra.correct||0,total:extra.total||0,ts:Date.now()});
+      if(u.history.length>50) u.history=u.history.slice(0,50);
+      saveUser(u); sUsr({...u});
+    }
+  };
+
   useEffect(()=>{const t=setInterval(()=>sHi(h=>(h+1)%3),4000);return()=>clearInterval(t);},[]);
   const hs=[SHOWS[0],SHOWS[1],SHOWS[5]];const h=hs[hi];
+
+  const lvInfo = usr ? getLvProgress(usr.totalPt) : null;
 
   return(
     <div style={{maxWidth:430,margin:"0 auto",minHeight:"100vh",background:"#000",color:"#fff",fontFamily:"'Noto Sans KR',-apple-system,BlinkMacSystemFont,sans-serif",position:"relative"}}>
@@ -182,8 +350,15 @@ export default function App() {
             <span style={{fontSize:22,fontWeight:800,letterSpacing:-1,background:"linear-gradient(135deg,#FF2D55,#FF6B35)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>TVING</span>
             <span style={{fontSize:11,color:"#aaa",background:"#1C1C1E",padding:"2px 8px",borderRadius:10}}>놀이터</span>
           </div>
-          <div style={{display:"flex",alignItems:"center",gap:12}}>
-            {lg&&<div style={{display:"flex",alignItems:"center",gap:4,background:"#1C1C1E",padding:"5px 10px",borderRadius:16}}><Ic.Coin /><span style={{fontSize:13,fontWeight:700,color:"#FFD60A"}}>{pt.toLocaleString()}P</span></div>}
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            {lg&&usr&&<div style={{display:"flex",alignItems:"center",gap:6}}>
+              <div style={{display:"flex",alignItems:"center",gap:4,background:"#1C1C1E",padding:"4px 10px",borderRadius:16}}>
+                <span style={{fontSize:14}}>{usr.avatar}</span>
+                <span style={{fontSize:11,fontWeight:600,color:"#fff"}}>{usr.nickname}</span>
+                <span style={{fontSize:10,color:lvInfo?.cur.c}}>{lvInfo?.cur.badge}</span>
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:4,background:"#1C1C1E",padding:"5px 10px",borderRadius:16}}><Ic.Coin /><span style={{fontSize:13,fontWeight:700,color:"#FFD60A"}}>{pt.toLocaleString()}P</span></div>
+            </div>}
             <button onClick={()=>lg?sLg(false):sLgM(true)} style={{background:lg?"#333":"#FF2D55",border:"none",padding:"6px 14px",borderRadius:16,color:"#fff",fontSize:12,fontWeight:600,cursor:"pointer"}}>{lg?"로그아웃":"로그인"}</button>
           </div>
         </div>
@@ -286,7 +461,7 @@ export default function App() {
         {/* Games */}
         <SH t="🎮 미니게임" s="게임하고 포인트!" onMore={()=>sTab("game")} />
         <div style={{display:"flex",gap:10,overflowX:"auto",padding:"0 16px 20px"}}>
-          {GAMES.slice(0,3).map(g=><button key={g.id} onClick={()=>{if(g.id==="quiz"||g.id==="roulette"){sGm(g.id);sTab("game");}else tt("곧 오픈! 🎮");}} style={{minWidth:150,background:`linear-gradient(135deg,${g.c}22,#1C1C1E)`,border:`1px solid ${g.c}33`,borderRadius:14,padding:14,textAlign:"left",cursor:"pointer",flexShrink:0}}>
+          {GAMES.slice(0,3).map(g=><button key={g.id} onClick={()=>{if(g.id==="quiz"||g.id==="roulette"||g.id==="memory"){sGm(g.id);sTab("game");}else tt("곧 오픈! 🎮");}} style={{minWidth:150,background:`linear-gradient(135deg,${g.c}22,#1C1C1E)`,border:`1px solid ${g.c}33`,borderRadius:14,padding:14,textAlign:"left",cursor:"pointer",flexShrink:0}}>
             <span style={{fontSize:28}}>{g.icon}</span><div style={{fontSize:13,fontWeight:600,color:"#fff",marginTop:8}}>{g.name}</div><div style={{display:"flex",alignItems:"center",gap:4,marginTop:4}}><Ic.Coin /><span style={{fontSize:11,color:"#FFD60A"}}>최대 {g.pts}P</span></div>
           </button>)}
         </div>
@@ -308,7 +483,8 @@ export default function App() {
       {tab==="game"&&<div style={{paddingBottom:80}}>
         {gm==="quiz"?<div><div style={{display:"flex",alignItems:"center",gap:12,padding:"0 16px 12px"}}><button onClick={()=>sGm(null)} style={{background:"none",border:"none",color:"#fff",cursor:"pointer",padding:0}}><Ic.Bk/></button><div style={{fontSize:18,fontWeight:700}}>캐릭터 퀴즈</div></div><Quiz onDone={()=>sGm(null)} onRew={rew}/></div>
         :gm==="roulette"?<div><div style={{display:"flex",alignItems:"center",gap:12,padding:"0 16px 12px"}}><button onClick={()=>sGm(null)} style={{background:"none",border:"none",color:"#fff",cursor:"pointer",padding:0}}><Ic.Bk/></button><div style={{fontSize:18,fontWeight:700}}>추천 룰렛</div></div><Roulette onDone={()=>sGm(null)} onRew={rew}/></div>
-        :<div><div style={{padding:"0 16px 12px"}}><div style={{fontSize:20,fontWeight:700}}>미니게임</div><div style={{fontSize:13,color:"#888",marginTop:2}}>게임하고 포인트!</div></div>{!lg&&<div style={{margin:"0 16px 16px",padding:"12px 16px",background:"rgba(255,45,85,.1)",border:"1px solid rgba(255,45,85,.3)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"space-between"}}><span style={{fontSize:13,color:"#FF8899"}}>로그인하면 포인트 적립!</span><button onClick={()=>sLgM(true)} style={{background:"#FF2D55",border:"none",borderRadius:8,color:"#fff",padding:"6px 12px",fontSize:12,fontWeight:600,cursor:"pointer"}}>로그인</button></div>}<div style={{display:"flex",flexDirection:"column",gap:12,padding:"0 16px"}}>{GAMES.map(g=><button key={g.id} onClick={()=>{if(g.id==="quiz"||g.id==="roulette")sGm(g.id);else tt("곧 오픈!");}} style={{display:"flex",alignItems:"center",gap:14,padding:16,background:"#1C1C1E",border:`1px solid ${g.c}33`,borderRadius:14,cursor:"pointer",textAlign:"left"}}><div style={{width:52,height:52,borderRadius:14,background:`${g.c}22`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,flexShrink:0}}>{g.icon}</div><div style={{flex:1}}><div style={{fontSize:15,fontWeight:600,color:"#fff"}}>{g.name}</div><div style={{fontSize:12,color:"#888",marginTop:2}}>{g.desc}</div></div><div style={{display:"flex",alignItems:"center",gap:4,flexShrink:0}}><Ic.Coin/><span style={{fontSize:13,fontWeight:600,color:"#FFD60A"}}>{g.pts}P</span></div></button>)}</div></div>}
+        :gm==="memory"?<div><div style={{display:"flex",alignItems:"center",gap:12,padding:"0 16px 12px"}}><button onClick={()=>sGm(null)} style={{background:"none",border:"none",color:"#fff",cursor:"pointer",padding:0}}><Ic.Bk/></button><div style={{fontSize:18,fontWeight:700}}>명장면 모드</div></div><FamousScene onDone={()=>sGm(null)} onRew={rew}/></div>
+        :<div><div style={{padding:"0 16px 12px"}}><div style={{fontSize:20,fontWeight:700}}>미니게임</div><div style={{fontSize:13,color:"#888",marginTop:2}}>게임하고 포인트!</div></div>{!lg&&<div style={{margin:"0 16px 16px",padding:"12px 16px",background:"rgba(255,45,85,.1)",border:"1px solid rgba(255,45,85,.3)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"space-between"}}><span style={{fontSize:13,color:"#FF8899"}}>로그인하면 포인트 적립!</span><button onClick={()=>sLgM(true)} style={{background:"#FF2D55",border:"none",borderRadius:8,color:"#fff",padding:"6px 12px",fontSize:12,fontWeight:600,cursor:"pointer"}}>로그인</button></div>}<div style={{display:"flex",flexDirection:"column",gap:12,padding:"0 16px"}}>{GAMES.map(g=><button key={g.id} onClick={()=>{if(g.id==="quiz"||g.id==="roulette"||g.id==="memory")sGm(g.id);else tt("곧 오픈!");}} style={{display:"flex",alignItems:"center",gap:14,padding:16,background:"#1C1C1E",border:`1px solid ${g.c}33`,borderRadius:14,cursor:"pointer",textAlign:"left"}}><div style={{width:52,height:52,borderRadius:14,background:`${g.c}22`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,flexShrink:0}}>{g.icon}</div><div style={{flex:1}}><div style={{fontSize:15,fontWeight:600,color:"#fff"}}>{g.name}</div><div style={{fontSize:12,color:"#888",marginTop:2}}>{g.desc}</div></div><div style={{display:"flex",alignItems:"center",gap:4,flexShrink:0}}><Ic.Coin/><span style={{fontSize:13,fontWeight:600,color:"#FFD60A"}}>{g.pts}P</span></div></button>)}</div></div>}
       </div>}
 
       {/* ═══ SCHEDULE ═══ */}
@@ -319,10 +495,90 @@ export default function App() {
       {/* ═══ MY ═══ */}
       {tab==="my"&&<div style={{paddingBottom:80}}><div style={{padding:"0 16px 20px"}}><div style={{fontSize:20,fontWeight:700}}>마이페이지</div></div>
         {!lg?<div style={{textAlign:"center",padding:"40px 16px"}}><div style={{width:80,height:80,borderRadius:"50%",background:"#1C1C1E",margin:"0 auto 16px",display:"flex",alignItems:"center",justifyContent:"center",color:"#555"}}><Ic.User/></div><div style={{fontSize:16,fontWeight:600,marginBottom:4}}>로그인이 필요합니다</div><div style={{fontSize:13,color:"#888",marginBottom:20}}>티빙 계정으로 로그인</div><button onClick={()=>sLgM(true)} style={{padding:"12px 32px",background:"#FF2D55",border:"none",borderRadius:12,color:"#fff",fontWeight:600,fontSize:15,cursor:"pointer"}}>로그인</button></div>
-        :<div style={{padding:"0 16px"}}><div style={{display:"flex",alignItems:"center",gap:14,marginBottom:24}}><div style={{width:56,height:56,borderRadius:"50%",background:"linear-gradient(135deg,#FF2D55,#FF6B35)",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff"}}><Ic.User/></div><div><div style={{fontSize:17,fontWeight:600}}>놀이터 사용자</div><div style={{fontSize:13,color:"#888"}}>tving_user@example.com</div></div></div>
+        :<div style={{padding:"0 16px"}}>
+          {/* 프로필 카드 */}
+          {usr&&<div style={{display:"flex",alignItems:"center",gap:14,marginBottom:16}}>
+            <div style={{width:56,height:56,borderRadius:"50%",background:"linear-gradient(135deg,#FF2D55,#FF6B35)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:28}}>{usr.avatar}</div>
+            <div style={{flex:1}}>
+              <div style={{display:"flex",alignItems:"center",gap:6}}>
+                <span style={{fontSize:17,fontWeight:600}}>{usr.nickname}</span>
+                <span style={{fontSize:12,padding:"2px 8px",borderRadius:8,background:`${lvInfo?.cur.c}22`,color:lvInfo?.cur.c,fontWeight:600}}>{lvInfo?.cur.badge} Lv.{lvInfo?.cur.lv} {lvInfo?.cur.name}</span>
+              </div>
+              <div style={{fontSize:12,color:"#888",marginTop:2}}>게임 {usr.gamesPlayed}회 플레이</div>
+            </div>
+          </div>}
+
+          {/* 레벨 프로그레스 */}
+          {lvInfo&&<div style={{background:"#1C1C1E",border:"1px solid #333",borderRadius:14,padding:16,marginBottom:16}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+              <span style={{fontSize:13,color:"#aaa"}}>{lvInfo.cur.badge} {lvInfo.cur.name}</span>
+              {lvInfo.next&&<span style={{fontSize:12,color:"#666"}}>다음: {lvInfo.next.badge} {lvInfo.next.name} ({lvInfo.next.min}P)</span>}
+            </div>
+            <div style={{width:"100%",height:6,background:"#333",borderRadius:3}}>
+              <div style={{width:`${lvInfo.pct}%`,height:"100%",background:`linear-gradient(90deg,${lvInfo.cur.c},${lvInfo.next?.c||lvInfo.cur.c})`,borderRadius:3,transition:"width .3s"}}/>
+            </div>
+            <div style={{fontSize:11,color:"#666",marginTop:6,textAlign:"right"}}>{usr?.totalPt}P / {lvInfo.next?.min||"MAX"}P</div>
+          </div>}
+
+          {/* 포인트 */}
           <div style={{background:"linear-gradient(135deg,#1a1a00,#1C1C1E)",border:"1px solid #333",borderRadius:14,padding:18,marginBottom:16}}><div style={{fontSize:13,color:"#888",marginBottom:6}}>보유 포인트</div><div style={{display:"flex",alignItems:"center",gap:8}}><Ic.Coin/><span style={{fontSize:28,fontWeight:800,color:"#FFD60A"}}>{pt.toLocaleString()}P</span></div></div>
+
+          {/* 랭킹 보드 */}
+          {usr&&<div style={{background:"#1C1C1E",border:"1px solid #333",borderRadius:14,padding:18,marginBottom:16}}>
+            <div style={{fontSize:15,fontWeight:700,marginBottom:14}}>🏆 랭킹 보드</div>
+            {(()=>{
+              const all=[...FAKE_USERS,{...usr,isMe:true}].map(u=>({...u,level:getLevel(u.totalPt)})).sort((a,b)=>b.totalPt-a.totalPt);
+              const top3=all.slice(0,3);
+              const rest=all.slice(3);
+              const medals=["🥇","🥈","🥉"];
+              return <>
+                {/* TOP 3 포디움 */}
+                <div style={{display:"flex",justifyContent:"center",alignItems:"flex-end",gap:8,marginBottom:16,padding:"0 8px"}}>
+                  {[1,0,2].map(pi=>{const u=top3[pi]; if(!u)return null;
+                    const h=pi===0?100:pi===1?80:70;
+                    return <div key={u.id} style={{flex:1,textAlign:"center"}}>
+                      <div style={{fontSize:pi===0?28:22,marginBottom:4}}>{medals[pi]}</div>
+                      <div style={{fontSize:pi===0?28:22,marginBottom:2}}>{u.avatar}</div>
+                      <div style={{fontSize:11,fontWeight:600,color:u.isMe?"#FF2D55":"#fff",marginBottom:2}}>{u.nickname}{u.isMe?" (나)":""}</div>
+                      <div style={{fontSize:10,color:u.level.c}}>{u.level.badge}Lv.{u.level.lv}</div>
+                      <div style={{height:h,background:pi===0?"linear-gradient(180deg,#FFD60A33,#FFD60A11)":pi===1?"linear-gradient(180deg,#C0C0C033,#C0C0C011)":"linear-gradient(180deg,#CD7F3233,#CD7F3211)",borderRadius:"8px 8px 0 0",marginTop:6,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                        <span style={{fontSize:12,fontWeight:700,color:"#FFD60A"}}>{u.totalPt.toLocaleString()}P</span>
+                      </div>
+                    </div>;
+                  })}
+                </div>
+                {/* 4위 이하 */}
+                {rest.map((u,ri)=><div key={u.id} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 4px",borderTop:"1px solid #333",background:u.isMe?"rgba(255,45,85,.08)":"transparent",borderRadius:u.isMe?8:0}}>
+                  <span style={{width:20,fontSize:13,fontWeight:600,color:"#666",textAlign:"center"}}>{ri+4}</span>
+                  <span style={{fontSize:18}}>{u.avatar}</span>
+                  <div style={{flex:1}}>
+                    <span style={{fontSize:13,fontWeight:u.isMe?700:500,color:u.isMe?"#FF2D55":"#fff"}}>{u.nickname}{u.isMe?" (나)":""}</span>
+                    <span style={{fontSize:10,color:u.level.c,marginLeft:6}}>{u.level.badge}Lv.{u.level.lv}</span>
+                  </div>
+                  <span style={{fontSize:12,fontWeight:600,color:"#FFD60A"}}>{u.totalPt.toLocaleString()}P</span>
+                </div>)}
+              </>;
+            })()}
+          </div>}
+
+          {/* 게임 히스토리 */}
+          {usr&&usr.history.length>0&&<div style={{background:"#1C1C1E",border:"1px solid #333",borderRadius:14,padding:18,marginBottom:16}}>
+            <div style={{fontSize:15,fontWeight:700,marginBottom:12}}>📋 게임 기록</div>
+            {usr.history.slice(0,10).map((h,hi)=><div key={hi} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",borderBottom:hi<Math.min(usr.history.length,10)-1?"1px solid #222":"none"}}>
+              <span style={{fontSize:20}}>{GAME_ICONS[h.game]||"🎮"}</span>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,fontWeight:500}}>{GAME_NAMES[h.game]||h.game}</div>
+                <div style={{fontSize:11,color:"#666"}}>{relTime(h.ts)}{h.total>0?` · ${h.correct}/${h.total}`:""}</div>
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:4}}><Ic.Coin/><span style={{fontSize:13,fontWeight:600,color:"#FFD60A"}}>+{h.pts}P</span></div>
+            </div>)}
+          </div>}
+
+          {/* 구매 콘텐츠 */}
           <div style={{background:"#1C1C1E",border:"1px solid #333",borderRadius:14,padding:18,marginBottom:16}}><div style={{fontSize:13,color:"#888",marginBottom:10}}>구매 콘텐츠</div>{own.length===0?<div style={{fontSize:14,color:"#555"}}>없음</div>:own.map(id=>{const s=SHOWS.find(x=>x.id===id);return s?<div key={id} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid #222"}}><span style={{fontSize:14}}>{s.title}</span><Ic.Chk/></div>:null;})}</div>
-          <button onClick={()=>sSubM(true)} style={{width:"100%",padding:16,background:"linear-gradient(135deg,#FF2D55,#FF6B35)",border:"none",borderRadius:14,color:"#fff",fontSize:15,fontWeight:600,cursor:"pointer"}}>🎁 구독권 보기</button></div>}
+
+          <button onClick={()=>sSubM(true)} style={{width:"100%",padding:16,background:"linear-gradient(135deg,#FF2D55,#FF6B35)",border:"none",borderRadius:14,color:"#fff",fontSize:15,fontWeight:600,cursor:"pointer",marginBottom:16}}>🎁 구독권 보기</button>
+        </div>}
       </div>}
 
       {/* TAB BAR */}

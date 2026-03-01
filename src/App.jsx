@@ -141,11 +141,44 @@ function ShowImage({ src, title, genre, color, style, children }) {
 
 
 const GAMES = [
+  { id:"catgame", name:"야옹이 키우기", desc:"고양이를 키워보세요!", icon:"🐱", pts:0, c:"#FF69B4" },
   { id:"quiz", name:"캐릭터 퀴즈", desc:"환승연애4 퀴즈", icon:"🧩", pts:50, c:"#FF2D55" },
   { id:"roulette", name:"추천 룰렛", desc:"랜덤 콘텐츠 추천", icon:"🎰", pts:30, c:"#FF9500" },
   { id:"memory", name:"명장면 모드", desc:"장면 보고 맞추기", icon:"🎬", pts:80, c:"#5856D6" },
   { id:"wordchain", name:"끝말잇기", desc:"드라마 제목 잇기", icon:"💬", pts:40, c:"#34C759" },
 ];
+
+// ─── CAT GAME DATA ──────────────────────────────────────────────
+const CAT_PROFILES = [
+  { id:"gs", name:"정기석", emoji:"😎" },
+  { id:"yj", name:"이용진", emoji:"🤗" },
+  { id:"yw", name:"김예원", emoji:"😊" },
+  { id:"yr", name:"유라", emoji:"💫" },
+  { id:"mk", name:"곽민경", emoji:"🌸" },
+  { id:"wj", name:"김우진", emoji:"🔥" },
+];
+
+const CAT_TYPES = [
+  { id:"cheese", name:"치즈냥", bodyColor:"#F5A623", stripeColor:"#E8912D", desc:"따뜻한 주황빛 치즈태비" },
+  { id:"black", name:"까만냥", bodyColor:"#2C2C2E", stripeColor:"#1C1C1E", desc:"신비로운 검은 고양이" },
+  { id:"white", name:"하양냥", bodyColor:"#F5F5F7", stripeColor:"#E8E8EA", desc:"순백의 하얀 고양이" },
+  { id:"calico", name:"삼색냥", bodyColor:"#F5F5F7", stripeColor:"#F5A623", patchColor:"#2C2C2E", desc:"세 가지 색 삼색이" },
+  { id:"russian", name:"러시안블루", bodyColor:"#8E8E93", stripeColor:"#6E6E73", desc:"우아한 회색빛 블루" },
+  { id:"siamese", name:"샴냥", bodyColor:"#F5E6D3", stripeColor:"#8B6914", desc:"크림빛 샴 포인트" },
+  { id:"tuxedo", name:"턱시도냥", bodyColor:"#2C2C2E", stripeColor:"#F5F5F7", desc:"젠틀한 턱시도 무늬" },
+  { id:"scottish", name:"스코티쉬냥", bodyColor:"#D4A574", stripeColor:"#B8956A", desc:"접힌 귀가 매력적" },
+];
+
+// 레벨업 필요 약 수 계산
+const getLevelReq = (lv) => {
+  const tier = Math.floor((lv - 1) / 10); // 0~9
+  const redMul = [2, 3, 5, 8, 12, 18, 25, 35, 50, 70];
+  const bluMul = [1, 2, 3, 5, 8, 12, 16, 22, 30, 45];
+  return {
+    red: lv * (redMul[tier] || 70),
+    blue: lv * (bluMul[tier] || 45),
+  };
+};
 
 const SCHED = [
   { day:"월", shows:[{t:"환승연애4 스페셜",time:"20:00",tag:"종영"}] },
@@ -195,7 +228,6 @@ function Roulette({ onDone, onRew }) {
   return<div style={{padding:24,textAlign:"center"}}><div style={{width:200,height:200,margin:"0 auto 24px",borderRadius:"50%",border:"4px solid #FF9500",display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",background:sp?"conic-gradient(#FF2D55,#FF9500,#FFD60A,#34C759,#5856D6,#FF2D55)":"#1C1C1E",animation:sp?"rl .5s linear infinite":"none"}}><style>{`@keyframes rl{from{transform:rotate(0)}to{transform:rotate(360deg)}}`}</style>{res&&!sp?<div style={{background:"#1C1C1E",borderRadius:"50%",width:160,height:160,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}><div style={{fontSize:14,color:"#aaa"}}>오늘의 추천</div><div style={{fontSize:18,fontWeight:700,color:"#fff",marginTop:4}}>{res.title}</div></div>:!sp?<div style={{background:"#1C1C1E",borderRadius:"50%",width:160,height:160,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:40}}>🎰</span></div>:null}</div>{res&&!sp&&<div style={{marginBottom:16}}><div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:12}}><Ic.Coin /><span style={{color:"#FFD60A",fontWeight:700}}>+30P</span></div></div>}<button onClick={res?onDone:go} style={{marginTop:12,padding:"12px 32px",background:res?"#333":"#FF9500",color:"#fff",border:"none",borderRadius:12,fontSize:16,fontWeight:600,cursor:"pointer"}}>{sp?"돌리는 중...":res?"돌아가기":"룰렛 돌리기!"}</button></div>;
 }
 
-// ─── 명장면 모드 (객관식 4지선다) ────────────────────────────────
 function FamousScene({ onDone, onRew }) {
   const allQ = [
     // show 타입: 이 장면은 어떤 프로그램?
@@ -291,6 +323,363 @@ function FamousScene({ onDone, onRew }) {
   );
 }
 
+function CatSVG({ cat, size = 200, blink }) {
+  const b = cat.bodyColor;
+  const s = cat.stripeColor;
+  const isScottish = cat.id === "scottish";
+  const isCalico = cat.id === "calico";
+  const eyeH = blink ? 1 : 18;
+  return (
+    <svg width={size} height={size} viewBox="0 0 200 200">
+      {/* 꼬리 */}
+      <path d="M 155 150 Q 185 120 175 90 Q 170 75 160 80" stroke={s} strokeWidth="8" fill="none" strokeLinecap="round" style={{animation:"catTail 2s ease-in-out infinite"}} />
+      {/* 몸통 */}
+      <ellipse cx="100" cy="155" rx="50" ry="35" fill={b} />
+      {/* 삼색 패치 */}
+      {isCalico && <><circle cx="85" cy="145" r="12" fill={cat.patchColor} opacity="0.7" /><circle cx="115" cy="160" r="10" fill={cat.stripeColor} opacity="0.8" /></>}
+      {/* 머리 */}
+      <circle cx="100" cy="100" r="42" fill={b} />
+      {/* 귀 */}
+      {isScottish ? <>
+        <path d="M 65 68 L 58 48 L 78 62 Z" fill={b} />
+        <path d="M 135 68 L 142 48 L 122 62 Z" fill={b} />
+        <path d="M 68 65 Q 65 58 75 63" fill={s} strokeWidth="0" />
+        <path d="M 132 65 Q 135 58 125 63" fill={s} strokeWidth="0" />
+      </> : <>
+        <path d="M 65 72 L 55 40 L 82 62 Z" fill={b} />
+        <path d="M 135 72 L 145 40 L 118 62 Z" fill={b} />
+        <path d="M 67 68 L 60 48 L 78 63 Z" fill="#FFB6C1" opacity="0.5" />
+        <path d="M 133 68 L 140 48 L 122 63 Z" fill="#FFB6C1" opacity="0.5" />
+      </>}
+      {/* 눈 - 큰 눈 + 글썽거리는 효과 */}
+      <ellipse cx="82" cy="96" rx="12" ry={eyeH/2+3} fill="white" />
+      <ellipse cx="118" cy="96" rx="12" ry={eyeH/2+3} fill="white" />
+      <ellipse cx="84" cy="97" rx="7" ry={Math.min(eyeH/2+1, 8)} fill="#2C2C2E" />
+      <ellipse cx="120" cy="97" rx="7" ry={Math.min(eyeH/2+1, 8)} fill="#2C2C2E" />
+      {/* 눈 하이라이트 (글썽거림) */}
+      {!blink && <>
+        <circle cx="87" cy="93" r="3" fill="white" opacity="0.9" />
+        <circle cx="123" cy="93" r="3" fill="white" opacity="0.9" />
+        <circle cx="82" cy="99" r="1.5" fill="white" opacity="0.5" />
+        <circle cx="118" cy="99" r="1.5" fill="white" opacity="0.5" />
+        {/* 눈물방울 반짝임 */}
+        <circle cx="93" cy="102" r="2" fill="#87CEEB" opacity="0.3">
+          <animate attributeName="opacity" values="0.1;0.4;0.1" dur="2s" repeatCount="indefinite" />
+        </circle>
+        <circle cx="107" cy="102" r="2" fill="#87CEEB" opacity="0.3">
+          <animate attributeName="opacity" values="0.1;0.4;0.1" dur="2s" repeatCount="indefinite" begin="0.5s" />
+        </circle>
+      </>}
+      {/* 코 */}
+      <path d="M 97 108 L 100 112 L 103 108 Z" fill="#FFB6C1" />
+      {/* 입 */}
+      <path d="M 100 112 Q 93 118 88 114" stroke={s === "#1C1C1E" ? "#555" : "#333"} strokeWidth="1.5" fill="none" strokeLinecap="round" />
+      <path d="M 100 112 Q 107 118 112 114" stroke={s === "#1C1C1E" ? "#555" : "#333"} strokeWidth="1.5" fill="none" strokeLinecap="round" />
+      {/* 수염 */}
+      <line x1="60" y1="104" x2="80" y2="107" stroke={s === "#1C1C1E" ? "#555" : "#888"} strokeWidth="1" />
+      <line x1="58" y1="112" x2="79" y2="112" stroke={s === "#1C1C1E" ? "#555" : "#888"} strokeWidth="1" />
+      <line x1="120" y1="107" x2="140" y2="104" stroke={s === "#1C1C1E" ? "#555" : "#888"} strokeWidth="1" />
+      <line x1="121" y1="112" x2="142" y2="112" stroke={s === "#1C1C1E" ? "#555" : "#888"} strokeWidth="1" />
+      {/* 앞발 */}
+      <ellipse cx="80" cy="180" rx="14" ry="8" fill={b} />
+      <ellipse cx="120" cy="180" rx="14" ry="8" fill={b} />
+    </svg>
+  );
+}
+
+// ─── CAT GAME ───────────────────────────────────────────────────
+function CatGame({ onDone, onGoShorts, onGoClip }) {
+  // localStorage에서 저장된 데이터 로드
+  const loadSave = () => {
+    try {
+      const d = localStorage.getItem("catgame_save");
+      return d ? JSON.parse(d) : null;
+    } catch { return null; }
+  };
+  const saved = loadSave();
+
+  const [phase, setPhase] = useState(saved ? "main" : "profile"); // profile → cat → main
+  const [profile, setProfile] = useState(saved?.profile || null);
+  const [cat, setCat] = useState(saved?.cat || null);
+  const [level, setLevel] = useState(saved?.level || 1);
+  const [redPills, setRedPills] = useState(saved?.redPills || 0);
+  const [bluePills, setBluePills] = useState(saved?.bluePills || 0);
+  const [lastCheck, setLastCheck] = useState(saved?.lastCheck || null);
+  const [blink, setBlink] = useState(false);
+  const [lvUpAnim, setLvUpAnim] = useState(false);
+  const [pillAnim, setPillAnim] = useState(null); // "red" | "blue" | null
+  const [showReset, setShowReset] = useState(false);
+
+  // 저장
+  const save = (data) => {
+    localStorage.setItem("catgame_save", JSON.stringify(data));
+  };
+
+  // 눈 깜빡임
+  useEffect(() => {
+    const t = setInterval(() => {
+      setBlink(true);
+      setTimeout(() => setBlink(false), 200);
+    }, 3000);
+    return () => clearInterval(t);
+  }, []);
+
+  // 오늘 출석 했는지
+  const today = new Date().toISOString().split("T")[0];
+  const checkedToday = lastCheck === today;
+
+  // 레벨업 요구사항
+  const req = getLevelReq(level);
+  const canLevelUp = level < 99 && redPills >= req.red && bluePills >= req.blue;
+  const redProgress = Math.min(redPills / req.red, 1);
+  const blueProgress = Math.min(bluePills / req.blue, 1);
+
+  // 프로필 선택
+  const pickProfile = (p) => {
+    setProfile(p);
+    setPhase("cat");
+  };
+
+  // 고양이 선택
+  const pickCat = (c) => {
+    setCat(c);
+    setPhase("main");
+    const data = { profile, cat: c, level: 1, redPills: 0, bluePills: 0, lastCheck: null };
+    save(data);
+  };
+
+  // 출석체크
+  const doCheck = () => {
+    if (checkedToday) return;
+    const newBlue = bluePills + 1;
+    setBluePills(newBlue);
+    setLastCheck(today);
+    setPillAnim("blue");
+    setTimeout(() => setPillAnim(null), 1200);
+    save({ profile, cat, level, redPills, bluePills: newBlue, lastCheck: today });
+  };
+
+  // 레벨업
+  const doLevelUp = () => {
+    if (!canLevelUp) return;
+    const newRed = redPills - req.red;
+    const newBlue = bluePills - req.blue;
+    const newLv = level + 1;
+    setRedPills(newRed);
+    setBluePills(newBlue);
+    setLevel(newLv);
+    setLvUpAnim(true);
+    setTimeout(() => setLvUpAnim(false), 2000);
+    save({ profile, cat, level: newLv, redPills: newRed, bluePills: newBlue, lastCheck });
+  };
+
+  // 리셋
+  const doReset = () => {
+    localStorage.removeItem("catgame_save");
+    setPhase("profile");
+    setProfile(null);
+    setCat(null);
+    setLevel(1);
+    setRedPills(0);
+    setBluePills(0);
+    setLastCheck(null);
+    setShowReset(false);
+  };
+
+  // ─ 프로필 선택 화면 ─
+  if (phase === "profile") return (
+    <div style={{padding:20}}>
+      <div style={{textAlign:"center",marginBottom:24}}>
+        <div style={{fontSize:32,marginBottom:8}}>🐱</div>
+        <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:4}}>야옹이 키우기</div>
+        <div style={{fontSize:13,color:"#888"}}>환승연애4 주인공으로 시작하기</div>
+      </div>
+      <div style={{fontSize:14,fontWeight:600,color:"#aaa",marginBottom:12}}>프로필 선택</div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
+        {CAT_PROFILES.map(p => (
+          <button key={p.id} onClick={() => pickProfile(p)} style={{
+            padding:"16px 8px",background:"#1C1C1E",border:"1px solid #333",borderRadius:14,
+            cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:6
+          }}>
+            <span style={{fontSize:32}}>{p.emoji}</span>
+            <span style={{fontSize:13,fontWeight:600,color:"#fff"}}>{p.name}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
+  // ─ 고양이 선택 화면 ─
+  if (phase === "cat") return (
+    <div style={{padding:20}}>
+      <div style={{textAlign:"center",marginBottom:20}}>
+        <div style={{fontSize:14,color:"#FF69B4",fontWeight:600,marginBottom:4}}>{profile.name}님의</div>
+        <div style={{fontSize:18,fontWeight:700,color:"#fff",marginBottom:4}}>고양이를 선택하세요</div>
+        <div style={{fontSize:12,color:"#888"}}>함께할 고양이 한 마리를 골라주세요</div>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+        {CAT_TYPES.map(c => (
+          <button key={c.id} onClick={() => pickCat(c)} style={{
+            padding:12,background:"#1C1C1E",border:"1px solid #333",borderRadius:14,
+            cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:4
+          }}>
+            <CatSVG cat={c} size={80} blink={false} />
+            <span style={{fontSize:13,fontWeight:600,color:"#fff"}}>{c.name}</span>
+            <span style={{fontSize:11,color:"#888"}}>{c.desc}</span>
+          </button>
+        ))}
+      </div>
+      <button onClick={() => setPhase("profile")} style={{
+        width:"100%",marginTop:12,padding:12,background:"#333",border:"none",
+        borderRadius:12,color:"#888",fontSize:14,cursor:"pointer"
+      }}>뒤로</button>
+    </div>
+  );
+
+  // ─ 메인 화면 ─
+  const catData = cat ? CAT_TYPES.find(c => c.id === cat.id) || cat : CAT_TYPES[0];
+
+  return (
+    <div style={{padding:20}}>
+      <style>{`
+        @keyframes catTail { 0%,100% { d: path("M 155 150 Q 185 120 175 90 Q 170 75 160 80"); } 50% { d: path("M 155 150 Q 190 130 180 95 Q 175 80 165 85"); } }
+        @keyframes lvUp { 0% { transform: scale(1); } 25% { transform: scale(1.15); } 50% { transform: scale(1); } 75% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        @keyframes pillPop { 0% { opacity:1; transform: translateY(0); } 100% { opacity:0; transform: translateY(-40px); } }
+        @keyframes sparkle { 0%,100% { opacity:0; transform: scale(0.5) rotate(0deg); } 50% { opacity:1; transform: scale(1.2) rotate(180deg); } }
+      `}</style>
+
+      {/* 프로필 + 레벨 */}
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <span style={{fontSize:22}}>{profile?.emoji}</span>
+          <div>
+            <div style={{fontSize:14,fontWeight:600,color:"#fff"}}>{profile?.name}</div>
+            <div style={{fontSize:11,color:"#888"}}>집사</div>
+          </div>
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <div style={{
+            padding:"4px 12px",background:"linear-gradient(135deg,#FFD60A22,#FF950022)",
+            border:"1px solid #FFD60A44",borderRadius:20,fontSize:13,fontWeight:700,color:"#FFD60A"
+          }}>Lv.{level}</div>
+          <button onClick={() => setShowReset(!showReset)} style={{
+            background:"none",border:"none",color:"#555",fontSize:16,cursor:"pointer",padding:4
+          }}>...</button>
+        </div>
+      </div>
+
+      {showReset && <div style={{marginBottom:12,padding:12,background:"#1C1C1E",borderRadius:10,
+        display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <span style={{fontSize:12,color:"#888"}}>처음부터 다시 시작</span>
+        <button onClick={doReset} style={{padding:"6px 14px",background:"#FF2D55",border:"none",
+          borderRadius:8,color:"#fff",fontSize:12,fontWeight:600,cursor:"pointer"}}>리셋</button>
+      </div>}
+
+      {/* 고양이 */}
+      <div style={{
+        textAlign:"center",margin:"0 auto 16px",position:"relative",
+        animation: lvUpAnim ? "lvUp 0.8s ease" : "none"
+      }}>
+        {lvUpAnim && <>
+          {[0,1,2,3,4,5].map(i => (
+            <div key={i} style={{
+              position:"absolute",
+              left: `${20 + (i*12)}%`, top: `${10 + (i%3)*20}%`,
+              fontSize: 16, animation: `sparkle 1s ease ${i*0.15}s`,
+              opacity: 0
+            }}>✨</div>
+          ))}
+          <div style={{
+            position:"absolute",top:-10,left:"50%",transform:"translateX(-50%)",
+            fontSize:20,fontWeight:800,color:"#FFD60A",
+            animation:"pillPop 1.5s ease forwards"
+          }}>LEVEL UP!</div>
+        </>}
+        <CatSVG cat={catData} size={180} blink={blink} />
+        <div style={{fontSize:16,fontWeight:700,color:"#fff",marginTop:4}}>{catData.name}</div>
+      </div>
+
+      {/* 약 획득 애니메이션 */}
+      {pillAnim && (
+        <div style={{
+          position:"fixed",top:"40%",left:"50%",transform:"translateX(-50%)",zIndex:300,
+          fontSize:24,fontWeight:800,color:pillAnim==="red"?"#FF2D55":"#5856D6",
+          animation:"pillPop 1.2s ease forwards"
+        }}>+1 {pillAnim==="red"?"💊":"💙"}</div>
+      )}
+
+      {/* 빨간약/파란약 보유 */}
+      <div style={{display:"flex",gap:10,marginBottom:16}}>
+        <div style={{flex:1,background:"#1C1C1E",borderRadius:12,padding:12,border:"1px solid #FF2D5533"}}>
+          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
+            <span style={{fontSize:16}}>💊</span>
+            <span style={{fontSize:12,color:"#FF8899"}}>빨간약</span>
+            <span style={{fontSize:14,fontWeight:700,color:"#FF2D55",marginLeft:"auto"}}>{redPills}</span>
+          </div>
+          <div style={{width:"100%",height:4,background:"#333",borderRadius:2}}>
+            <div style={{width:`${redProgress*100}%`,height:"100%",background:"#FF2D55",borderRadius:2,transition:"width .3s"}} />
+          </div>
+          <div style={{fontSize:10,color:"#666",marginTop:4}}>{redPills}/{req.red} 필요</div>
+        </div>
+        <div style={{flex:1,background:"#1C1C1E",borderRadius:12,padding:12,border:"1px solid #5856D633"}}>
+          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
+            <span style={{fontSize:16}}>💙</span>
+            <span style={{fontSize:12,color:"#8888FF"}}>파란약</span>
+            <span style={{fontSize:14,fontWeight:700,color:"#5856D6",marginLeft:"auto"}}>{bluePills}</span>
+          </div>
+          <div style={{width:"100%",height:4,background:"#333",borderRadius:2}}>
+            <div style={{width:`${blueProgress*100}%`,height:"100%",background:"#5856D6",borderRadius:2,transition:"width .3s"}} />
+          </div>
+          <div style={{fontSize:10,color:"#666",marginTop:4}}>{bluePills}/{req.blue} 필요</div>
+        </div>
+      </div>
+
+      {/* 레벨업 버튼 */}
+      {level < 99 ? (
+        <button onClick={doLevelUp} disabled={!canLevelUp} style={{
+          width:"100%",padding:14,marginBottom:10,
+          background:canLevelUp?"linear-gradient(135deg,#FFD60A,#FF9500)":"#333",
+          border:"none",borderRadius:12,color:canLevelUp?"#000":"#666",
+          fontSize:15,fontWeight:700,cursor:canLevelUp?"pointer":"not-allowed"
+        }}>{canLevelUp ? `Lv.${level+1}로 레벨업!` : `레벨업까지 — 💊${Math.max(0,req.red-redPills)} 💙${Math.max(0,req.blue-bluePills)} 더 필요`}</button>
+      ) : (
+        <div style={{width:"100%",padding:14,marginBottom:10,background:"linear-gradient(135deg,#FFD60A,#FF9500)",
+          borderRadius:12,textAlign:"center",fontSize:15,fontWeight:800,color:"#000"
+        }}>MAX LEVEL 달성! 🏆</div>
+      )}
+
+      {/* 출석체크 */}
+      <button onClick={doCheck} disabled={checkedToday} style={{
+        width:"100%",padding:14,marginBottom:10,
+        background:checkedToday?"#1C1C1E":"linear-gradient(135deg,#5856D6,#8B5CF6)",
+        border:checkedToday?"1px solid #333":"none",borderRadius:12,
+        color:checkedToday?"#666":"#fff",fontSize:14,fontWeight:600,
+        cursor:checkedToday?"not-allowed":"pointer"
+      }}>{checkedToday ? "오늘 출석 완료 ✅" : "출석체크 💙 파란약 받기"}</button>
+
+      {/* 콘텐츠 시청 */}
+      <div style={{display:"flex",gap:8}}>
+        <button onClick={onGoShorts} style={{
+          flex:1,padding:12,background:"#1C1C1E",border:"1px solid #FF2D5533",
+          borderRadius:12,color:"#FF8899",fontSize:13,fontWeight:600,cursor:"pointer"
+        }}>📱 쇼츠 보기</button>
+        <button onClick={onGoClip} style={{
+          flex:1,padding:12,background:"#1C1C1E",border:"1px solid #FF2D5533",
+          borderRadius:12,color:"#FF8899",fontSize:13,fontWeight:600,cursor:"pointer"
+        }}>🎬 클립 보기</button>
+      </div>
+
+      <div style={{textAlign:"center",marginTop:16,fontSize:11,color:"#555"}}>
+        쇼츠/클립/VOD를 시청하면 💊 빨간약을 받아요
+      </div>
+    </div>
+  );
+}
+      </div>
+    </div>
+  );
+}
+
 // ─── SHARED UI ──────────────────────────────────────────────────
 const SH=({t,s,onMore})=><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"4px 16px 10px"}}><div><div style={{fontSize:17,fontWeight:700,color:"#fff"}}>{t}</div>{s&&<div style={{fontSize:12,color:"#888",marginTop:1}}>{s}</div>}</div>{onMore&&<button onClick={onMore} style={{background:"none",border:"none",color:"#888",fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",gap:2}}>더보기<Ic.Arr /></button>}</div>;
 const PlayBtn=({size=32})=><div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:size,height:size,background:"rgba(0,0,0,0.5)",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(4px)",border:"1px solid rgba(255,255,255,0.2)"}}><Ic.Play /></div>;
@@ -334,6 +723,8 @@ export default function App() {
     }
   };
 
+  // 빨간약 추가 (콘텐츠 시청 시 호출)
+  const addRedPill=()=>{try{const d=localStorage.getItem("catgame_save");if(d){const s=JSON.parse(d);s.redPills=(s.redPills||0)+1;localStorage.setItem("catgame_save",JSON.stringify(s));}}catch{}};
   useEffect(()=>{const t=setInterval(()=>sHi(h=>(h+1)%3),4000);return()=>clearInterval(t);},[]);
   const hs=[SHOWS[0],SHOWS[1],SHOWS[5]];const h=hs[hi];
 
@@ -433,7 +824,8 @@ export default function App() {
         {/* Shorts */}
         <SH t="🔥 쇼츠" s="짧고 강렬한 클립" onMore={()=>sTab("shorts")} />
         <div style={{display:"flex",gap:10,overflowX:"auto",padding:"0 16px 20px"}}>
-          {SHOWS.flatMap(s=>s.shorts.map((sh,i)=>({...sh,show:s,key:`${s.id}s${i}`}))).slice(0,8).map(it=><div key={it.key} style={{minWidth:110,flexShrink:0,cursor:"pointer"}} onClick={()=>it.show.tvingUrl?window.open(it.show.tvingUrl,'_blank','noopener,noreferrer'):sDet(it.show)}>
+          {SHOWS.flatMap(s=>s.shorts.map((sh,i)=>({...sh,show:s,key:`${s.id}s${i}`}))).slice(0,8).map(it=><div key={it.key} style={{minWidth:110,flexShrink:0,cursor:"pointer"}} onClick={()=>{addRedPill();it.show.tvingUrl?window.open(it.show.tvingUrl,'_blank','noopener,noreferrer'):sDet(it.show);}}>
+
             <div style={{width:110,height:160,borderRadius:10,overflow:"hidden",position:"relative"}}>
               <ShowImage src={it.thumb || it.show.posterImage} title={it.t} color={it.show.tc}>
                 <div style={{position:"absolute",inset:0,background:"linear-gradient(transparent 40%,rgba(0,0,0,0.8))"}} />
@@ -447,7 +839,8 @@ export default function App() {
         {/* Clips */}
         <SH t="🎬 클립" s="놓치면 아쉬운 명장면" onMore={()=>sTab("clip")} />
         <div style={{display:"flex",gap:10,overflowX:"auto",padding:"0 16px 20px"}}>
-          {SHOWS.flatMap(s=>s.clips.map((c,i)=>({...c,show:s,key:`${s.id}c${i}`}))).slice(0,8).map(it=><div key={it.key} style={{minWidth:220,flexShrink:0,cursor:"pointer"}} onClick={()=>it.url?window.open(it.url,'_blank','noopener,noreferrer'):sDet(it.show)}>
+          {SHOWS.flatMap(s=>s.clips.map((c,i)=>({...c,show:s,key:`${s.id}c${i}`}))).slice(0,8).map(it=><div key={it.key} style={{minWidth:220,flexShrink:0,cursor:"pointer"}} onClick={()=>{addRedPill();it.url?window.open(it.url,'_blank','noopener,noreferrer'):sDet(it.show);}}>
+
             <div style={{width:220,height:124,borderRadius:10,overflow:"hidden",position:"relative"}}>
               <ShowImage src={it.thumb || it.show.posterImage} title={it.t} color={it.show.tc}>
                 <div style={{position:"absolute",inset:0,background:"linear-gradient(transparent 30%,rgba(0,0,0,0.8))"}} />
@@ -471,12 +864,14 @@ export default function App() {
 
       {/* ═══ SHORTS ═══ */}
       {tab==="shorts"&&<div style={{paddingBottom:80}}><div style={{padding:"0 16px 12px"}}><div style={{fontSize:20,fontWeight:700}}>쇼츠</div><div style={{fontSize:13,color:"#888",marginTop:2}}>세로형 숏폼</div></div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,padding:"0 16px"}}>{SHOWS.flatMap(s=>s.shorts.map((sh,i)=>({...sh,show:s,key:`${s.id}s${i}`}))).map(it=><div key={it.key} style={{cursor:"pointer"}} onClick={()=>it.show.tvingUrl?window.open(it.show.tvingUrl,'_blank','noopener,noreferrer'):sDet(it.show)}><div style={{width:"100%",aspectRatio:"9/16",borderRadius:12,overflow:"hidden",position:"relative"}}><ShowImage src={it.thumb || it.show.posterImage} title={it.t} color={it.show.tc}><div style={{position:"absolute",inset:0,background:"linear-gradient(transparent 50%,rgba(0,0,0,0.8))"}}/><PlayBtn size={40}/><div style={{position:"absolute",bottom:8,left:8,right:8,zIndex:2}}><div style={{fontSize:12,fontWeight:600,color:"#fff",textShadow:"0 1px 4px #000"}}>{it.t}</div><div style={{fontSize:10,color:"#bbb",marginTop:2}}>{it.show.title}</div></div></ShowImage></div></div>)}</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,padding:"0 16px"}}>{SHOWS.flatMap(s=>s.shorts.map((sh,i)=>({...sh,show:s,key:`${s.id}s${i}`}))).map(it=><div key={it.key} style={{cursor:"pointer"}} onClick={()=>{addRedPill();tt("💊 빨간약 +1!");it.show.tvingUrl?window.open(it.show.tvingUrl,'_blank','noopener,noreferrer'):sDet(it.show);}}><div style={{width:"100%",aspectRatio:"9/16",borderRadius:12,overflow:"hidden",position:"relative"}}><ShowImage src={it.thumb || it.show.posterImage} title={it.t} color={it.show.tc}><div style={{position:"absolute",inset:0,background:"linear-gradient(transparent 50%,rgba(0,0,0,0.8))"}}/><PlayBtn size={40}/><div style={{position:"absolute",bottom:8,left:8,right:8,zIndex:2}}><div style={{fontSize:12,fontWeight:600,color:"#fff",textShadow:"0 1px 4px #000"}}>{it.t}</div><div style={{fontSize:10,color:"#bbb",marginTop:2}}>{it.show.title}</div></div></ShowImage></div></div>)}</div>
+
       </div>}
 
       {/* ═══ CLIP ═══ */}
       {tab==="clip"&&<div style={{paddingBottom:80}}><div style={{padding:"0 16px 12px"}}><div style={{fontSize:20,fontWeight:700}}>클립</div><div style={{fontSize:13,color:"#888",marginTop:2}}>가로형 하이라이트</div></div>
-        <div style={{display:"flex",flexDirection:"column",gap:12,padding:"0 16px"}}>{SHOWS.flatMap(s=>s.clips.map((c,i)=>({...c,show:s,key:`${s.id}c${i}`}))).map(it=><div key={it.key} style={{cursor:"pointer"}} onClick={()=>it.url?window.open(it.url,'_blank','noopener,noreferrer'):sDet(it.show)}><div style={{width:"100%",aspectRatio:"16/9",borderRadius:12,overflow:"hidden",position:"relative"}}><ShowImage src={it.thumb || it.show.posterImage} title={it.t} color={it.show.tc}><div style={{position:"absolute",inset:0,background:"linear-gradient(transparent 30%,rgba(0,0,0,0.8))"}}/><PlayBtn size={48}/><div style={{position:"absolute",bottom:0,left:0,right:0,padding:"24px 12px 10px",zIndex:2}}><div style={{fontSize:14,fontWeight:600,color:"#fff",textShadow:"0 1px 4px #000"}}>{it.t}</div><div style={{fontSize:12,color:"#bbb",marginTop:2}}>{it.show.title} · {it.e}</div></div></ShowImage></div></div>)}</div>
+        <div style={{display:"flex",flexDirection:"column",gap:12,padding:"0 16px"}}>{SHOWS.flatMap(s=>s.clips.map((c,i)=>({...c,show:s,key:`${s.id}c${i}`}))).map(it=><div key={it.key} style={{cursor:"pointer"}} onClick={()=>{addRedPill();tt("💊 빨간약 +1!");it.url?window.open(it.url,'_blank','noopener,noreferrer'):sDet(it.show);}}><div style={{width:"100%",aspectRatio:"16/9",borderRadius:12,overflow:"hidden",position:"relative"}}><ShowImage src={it.thumb || it.show.posterImage} title={it.t} color={it.show.tc}><div style={{position:"absolute",inset:0,background:"linear-gradient(transparent 30%,rgba(0,0,0,0.8))"}}/><PlayBtn size={48}/><div style={{position:"absolute",bottom:0,left:0,right:0,padding:"24px 12px 10px",zIndex:2}}><div style={{fontSize:14,fontWeight:600,color:"#fff",textShadow:"0 1px 4px #000"}}>{it.t}</div><div style={{fontSize:12,color:"#bbb",marginTop:2}}>{it.show.title} · {it.e}</div></div></ShowImage></div></div>)}</div>
+
       </div>}
 
       {/* ═══ GAME ═══ */}
@@ -484,7 +879,8 @@ export default function App() {
         {gm==="quiz"?<div><div style={{display:"flex",alignItems:"center",gap:12,padding:"0 16px 12px"}}><button onClick={()=>sGm(null)} style={{background:"none",border:"none",color:"#fff",cursor:"pointer",padding:0}}><Ic.Bk/></button><div style={{fontSize:18,fontWeight:700}}>캐릭터 퀴즈</div></div><Quiz onDone={()=>sGm(null)} onRew={rew}/></div>
         :gm==="roulette"?<div><div style={{display:"flex",alignItems:"center",gap:12,padding:"0 16px 12px"}}><button onClick={()=>sGm(null)} style={{background:"none",border:"none",color:"#fff",cursor:"pointer",padding:0}}><Ic.Bk/></button><div style={{fontSize:18,fontWeight:700}}>추천 룰렛</div></div><Roulette onDone={()=>sGm(null)} onRew={rew}/></div>
         :gm==="memory"?<div><div style={{display:"flex",alignItems:"center",gap:12,padding:"0 16px 12px"}}><button onClick={()=>sGm(null)} style={{background:"none",border:"none",color:"#fff",cursor:"pointer",padding:0}}><Ic.Bk/></button><div style={{fontSize:18,fontWeight:700}}>명장면 모드</div></div><FamousScene onDone={()=>sGm(null)} onRew={rew}/></div>
-        :<div><div style={{padding:"0 16px 12px"}}><div style={{fontSize:20,fontWeight:700}}>미니게임</div><div style={{fontSize:13,color:"#888",marginTop:2}}>게임하고 포인트!</div></div>{!lg&&<div style={{margin:"0 16px 16px",padding:"12px 16px",background:"rgba(255,45,85,.1)",border:"1px solid rgba(255,45,85,.3)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"space-between"}}><span style={{fontSize:13,color:"#FF8899"}}>로그인하면 포인트 적립!</span><button onClick={()=>sLgM(true)} style={{background:"#FF2D55",border:"none",borderRadius:8,color:"#fff",padding:"6px 12px",fontSize:12,fontWeight:600,cursor:"pointer"}}>로그인</button></div>}<div style={{display:"flex",flexDirection:"column",gap:12,padding:"0 16px"}}>{GAMES.map(g=><button key={g.id} onClick={()=>{if(g.id==="quiz"||g.id==="roulette"||g.id==="memory")sGm(g.id);else tt("곧 오픈!");}} style={{display:"flex",alignItems:"center",gap:14,padding:16,background:"#1C1C1E",border:`1px solid ${g.c}33`,borderRadius:14,cursor:"pointer",textAlign:"left"}}><div style={{width:52,height:52,borderRadius:14,background:`${g.c}22`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,flexShrink:0}}>{g.icon}</div><div style={{flex:1}}><div style={{fontSize:15,fontWeight:600,color:"#fff"}}>{g.name}</div><div style={{fontSize:12,color:"#888",marginTop:2}}>{g.desc}</div></div><div style={{display:"flex",alignItems:"center",gap:4,flexShrink:0}}><Ic.Coin/><span style={{fontSize:13,fontWeight:600,color:"#FFD60A"}}>{g.pts}P</span></div></button>)}</div></div>}
+        :gm==="catgame"?<div><div style={{display:"flex",alignItems:"center",gap:12,padding:"0 16px 12px"}}><button onClick={()=>sGm(null)} style={{background:"none",border:"none",color:"#fff",cursor:"pointer",padding:0}}><Ic.Bk/></button><div style={{fontSize:18,fontWeight:700}}>야옹이 키우기</div></div><CatGame onDone={()=>sGm(null)} onGoShorts={()=>{sTab("shorts");sGm(null);}} onGoClip={()=>{sTab("clip");sGm(null);}}/></div>
+        :<div><div style={{padding:"0 16px 12px"}}><div style={{fontSize:20,fontWeight:700}}>미니게임</div><div style={{fontSize:13,color:"#888",marginTop:2}}>게임하고 포인트!</div></div>{!lg&&<div style={{margin:"0 16px 16px",padding:"12px 16px",background:"rgba(255,45,85,.1)",border:"1px solid rgba(255,45,85,.3)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"space-between"}}><span style={{fontSize:13,color:"#FF8899"}}>로그인하면 포인트 적립!</span><button onClick={()=>sLgM(true)} style={{background:"#FF2D55",border:"none",borderRadius:8,color:"#fff",padding:"6px 12px",fontSize:12,fontWeight:600,cursor:"pointer"}}>로그인</button></div>}<div style={{display:"flex",flexDirection:"column",gap:12,padding:"0 16px"}}>{GAMES.map(g=><button key={g.id} onClick={()=>{if(g.id==="quiz"||g.id==="roulette"||g.id==="memory"||g.id==="catgame")sGm(g.id);else tt("곧 오픈!");}} style={{display:"flex",alignItems:"center",gap:14,padding:16,background:"#1C1C1E",border:`1px solid ${g.c}33`,borderRadius:14,cursor:"pointer",textAlign:"left"}}><div style={{width:52,height:52,borderRadius:14,background:`${g.c}22`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,flexShrink:0}}>{g.icon}</div><div style={{flex:1}}><div style={{fontSize:15,fontWeight:600,color:"#fff"}}>{g.name}</div><div style={{fontSize:12,color:"#888",marginTop:2}}>{g.desc}</div></div>{g.pts>0&&<div style={{display:"flex",alignItems:"center",gap:4,flexShrink:0}}><Ic.Coin/><span style={{fontSize:13,fontWeight:600,color:"#FFD60A"}}>{g.pts}P</span></div>}</button>)}</div></div>}
       </div>}
 
       {/* ═══ SCHEDULE ═══ */}

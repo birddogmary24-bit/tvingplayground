@@ -9,7 +9,8 @@ const SHOWS = SHOWS_RAW.map(s => ({
   rat: s.rating,
   sched: s.schedule,
   ep: s.episodes.length,
-  yt: `https://www.youtube.com/results?search_query=${encodeURIComponent(s.title + " 티빙 클립")}`,
+  tvingUrl: s.clips[0]?.clipUrl || s.episodes[0]?.vodUrl || null,
+  tvingEpUrl: s.episodes[0]?.vodUrl || s.clips[0]?.clipUrl || null,
   clips: s.clips.map(c => ({ t: c.title, e: c.episode, thumb: c.clipThumbnail, url: c.clipUrl })),
   shorts: s.shorts.map(sh => ({ t: sh.title, thumb: sh.shortsThumbnail })),
 }));
@@ -375,7 +376,7 @@ export default function App() {
             <div style={{fontSize:28,fontWeight:800,color:"#fff",marginBottom:6,textShadow:"0 2px 8px rgba(0,0,0,0.8)"}}>{h.title}</div>
             <div style={{fontSize:13,color:"#ddd",marginBottom:16,textShadow:"0 1px 4px rgba(0,0,0,0.8)"}}>{h.desc}</div>
             <div style={{display:"flex",gap:8,alignItems:"center"}}>
-              <a href={h.yt} target="_blank" rel="noopener noreferrer" style={{display:"inline-flex",alignItems:"center",gap:6,padding:"10px 22px",background:"#FF2D55",borderRadius:24,color:"#fff",textDecoration:"none",fontWeight:600,fontSize:14}}><Ic.Play /> 클립 보러가기</a>
+              <a href={h.tvingUrl} target="_blank" rel="noopener noreferrer" style={{display:"inline-flex",alignItems:"center",gap:6,padding:"10px 22px",background:"#FF2D55",borderRadius:24,color:"#fff",textDecoration:"none",fontWeight:600,fontSize:14}}><Ic.Play /> 클립 보러가기</a>
               <div style={{display:"flex",gap:4}}>{hs.map((_,i)=><div key={i} style={{width:i===hi?16:6,height:6,borderRadius:3,background:i===hi?"#FF2D55":"#555",transition:"all .3s"}}/>)}</div>
             </div>
           </div>
@@ -385,6 +386,34 @@ export default function App() {
         <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,padding:"8px 16px 20px"}}>
           {[{i:"🆓",l:"무료 VOD",a:()=>sAllM(true)},{i:"📱",l:"쇼츠",a:()=>sTab("shorts")},{i:"🎮",l:"미니게임",a:()=>sTab("game")},{i:"📅",l:"공개일정",a:()=>sTab("sched")}].map((m,k)=><button key={k} onClick={m.a} style={{background:"#1C1C1E",border:"1px solid #222",borderRadius:14,padding:"14px 4px",display:"flex",flexDirection:"column",alignItems:"center",gap:6,cursor:"pointer"}}><span style={{fontSize:24}}>{m.i}</span><span style={{fontSize:11,color:"#ccc"}}>{m.l}</span></button>)}
         </div>
+
+
+        {/* 3Pack Banner */}
+        <a href="https://www.tving.com/list/theme/3pack" target="_blank" rel="noopener noreferrer" style={{display:"block",margin:"0 16px 20px",borderRadius:14,overflow:"hidden",aspectRatio:"640/120",background:"linear-gradient(135deg,#141833,#1a1e3a,#0f1228)",position:"relative",textDecoration:"none"}}>
+          <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",gap:0}}>
+            {/* Disney+ */}
+            <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center"}}>
+              <svg viewBox="0 0 120 40" style={{width:"70%",maxWidth:110}}>
+                <text x="10" y="30" fill="#fff" fontSize="15" fontFamily="serif" fontStyle="italic" fontWeight="700" letterSpacing="-0.5">
+                  <tspan>D</tspan><tspan fontSize="13">isney</tspan><tspan fontSize="18" dy="-6">+</tspan>
+                </text>
+                <path d="M10 34 Q60 38 110 32" stroke="#fff" strokeWidth="0.8" fill="none" opacity="0.5"/>
+              </svg>
+            </div>
+            {/* Divider */}
+            <div style={{width:1,height:"40%",background:"rgba(255,255,255,0.2)"}}/>
+            {/* TVING */}
+            <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center"}}>
+              <span style={{fontSize:22,fontWeight:900,color:"#FF0A2B",letterSpacing:1,fontFamily:"sans-serif"}}>TVING</span>
+            </div>
+            {/* Divider */}
+            <div style={{width:1,height:"40%",background:"rgba(255,255,255,0.2)"}}/>
+            {/* Wavve */}
+            <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center"}}>
+              <span style={{fontSize:20,fontWeight:800,color:"#1B6BFF",letterSpacing:0.5,fontFamily:"sans-serif"}}>Wavve</span>
+            </div>
+          </div>
+        </a>
 
         {/* VOD */}
         <SH t="인기 VOD" s="지금 핫한 콘텐츠" onMore={()=>sAllM(true)} />
@@ -404,7 +433,7 @@ export default function App() {
         {/* Shorts */}
         <SH t="🔥 쇼츠" s="짧고 강렬한 클립" onMore={()=>sTab("shorts")} />
         <div style={{display:"flex",gap:10,overflowX:"auto",padding:"0 16px 20px"}}>
-          {SHOWS.flatMap(s=>s.shorts.map((sh,i)=>({...sh,show:s,key:`${s.id}s${i}`}))).slice(0,8).map(it=><div key={it.key} style={{minWidth:110,flexShrink:0,cursor:"pointer"}} onClick={()=>sDet(it.show)}>
+          {SHOWS.flatMap(s=>s.shorts.map((sh,i)=>({...sh,show:s,key:`${s.id}s${i}`}))).slice(0,8).map(it=><div key={it.key} style={{minWidth:110,flexShrink:0,cursor:"pointer"}} onClick={()=>it.show.tvingUrl?window.open(it.show.tvingUrl,'_blank','noopener,noreferrer'):sDet(it.show)}>
             <div style={{width:110,height:160,borderRadius:10,overflow:"hidden",position:"relative"}}>
               <ShowImage src={it.thumb || it.show.posterImage} title={it.t} color={it.show.tc}>
                 <div style={{position:"absolute",inset:0,background:"linear-gradient(transparent 40%,rgba(0,0,0,0.8))"}} />
@@ -418,7 +447,7 @@ export default function App() {
         {/* Clips */}
         <SH t="🎬 클립" s="놓치면 아쉬운 명장면" onMore={()=>sTab("clip")} />
         <div style={{display:"flex",gap:10,overflowX:"auto",padding:"0 16px 20px"}}>
-          {SHOWS.flatMap(s=>s.clips.map((c,i)=>({...c,show:s,key:`${s.id}c${i}`}))).slice(0,8).map(it=><div key={it.key} style={{minWidth:220,flexShrink:0,cursor:"pointer"}} onClick={()=>sDet(it.show)}>
+          {SHOWS.flatMap(s=>s.clips.map((c,i)=>({...c,show:s,key:`${s.id}c${i}`}))).slice(0,8).map(it=><div key={it.key} style={{minWidth:220,flexShrink:0,cursor:"pointer"}} onClick={()=>it.url?window.open(it.url,'_blank','noopener,noreferrer'):sDet(it.show)}>
             <div style={{width:220,height:124,borderRadius:10,overflow:"hidden",position:"relative"}}>
               <ShowImage src={it.thumb || it.show.posterImage} title={it.t} color={it.show.tc}>
                 <div style={{position:"absolute",inset:0,background:"linear-gradient(transparent 30%,rgba(0,0,0,0.8))"}} />
@@ -442,12 +471,12 @@ export default function App() {
 
       {/* ═══ SHORTS ═══ */}
       {tab==="shorts"&&<div style={{paddingBottom:80}}><div style={{padding:"0 16px 12px"}}><div style={{fontSize:20,fontWeight:700}}>쇼츠</div><div style={{fontSize:13,color:"#888",marginTop:2}}>세로형 숏폼</div></div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,padding:"0 16px"}}>{SHOWS.flatMap(s=>s.shorts.map((sh,i)=>({...sh,show:s,key:`${s.id}s${i}`}))).map(it=><div key={it.key} style={{cursor:"pointer"}} onClick={()=>sDet(it.show)}><div style={{width:"100%",aspectRatio:"9/16",borderRadius:12,overflow:"hidden",position:"relative"}}><ShowImage src={it.thumb || it.show.posterImage} title={it.t} color={it.show.tc}><div style={{position:"absolute",inset:0,background:"linear-gradient(transparent 50%,rgba(0,0,0,0.8))"}}/><PlayBtn size={40}/><div style={{position:"absolute",bottom:8,left:8,right:8,zIndex:2}}><div style={{fontSize:12,fontWeight:600,color:"#fff",textShadow:"0 1px 4px #000"}}>{it.t}</div><div style={{fontSize:10,color:"#bbb",marginTop:2}}>{it.show.title}</div></div></ShowImage></div></div>)}</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,padding:"0 16px"}}>{SHOWS.flatMap(s=>s.shorts.map((sh,i)=>({...sh,show:s,key:`${s.id}s${i}`}))).map(it=><div key={it.key} style={{cursor:"pointer"}} onClick={()=>it.show.tvingUrl?window.open(it.show.tvingUrl,'_blank','noopener,noreferrer'):sDet(it.show)}><div style={{width:"100%",aspectRatio:"9/16",borderRadius:12,overflow:"hidden",position:"relative"}}><ShowImage src={it.thumb || it.show.posterImage} title={it.t} color={it.show.tc}><div style={{position:"absolute",inset:0,background:"linear-gradient(transparent 50%,rgba(0,0,0,0.8))"}}/><PlayBtn size={40}/><div style={{position:"absolute",bottom:8,left:8,right:8,zIndex:2}}><div style={{fontSize:12,fontWeight:600,color:"#fff",textShadow:"0 1px 4px #000"}}>{it.t}</div><div style={{fontSize:10,color:"#bbb",marginTop:2}}>{it.show.title}</div></div></ShowImage></div></div>)}</div>
       </div>}
 
       {/* ═══ CLIP ═══ */}
       {tab==="clip"&&<div style={{paddingBottom:80}}><div style={{padding:"0 16px 12px"}}><div style={{fontSize:20,fontWeight:700}}>클립</div><div style={{fontSize:13,color:"#888",marginTop:2}}>가로형 하이라이트</div></div>
-        <div style={{display:"flex",flexDirection:"column",gap:12,padding:"0 16px"}}>{SHOWS.flatMap(s=>s.clips.map((c,i)=>({...c,show:s,key:`${s.id}c${i}`}))).map(it=><div key={it.key} style={{cursor:"pointer"}} onClick={()=>sDet(it.show)}><div style={{width:"100%",aspectRatio:"16/9",borderRadius:12,overflow:"hidden",position:"relative"}}><ShowImage src={it.thumb || it.show.posterImage} title={it.t} color={it.show.tc}><div style={{position:"absolute",inset:0,background:"linear-gradient(transparent 30%,rgba(0,0,0,0.8))"}}/><PlayBtn size={48}/><div style={{position:"absolute",bottom:0,left:0,right:0,padding:"24px 12px 10px",zIndex:2}}><div style={{fontSize:14,fontWeight:600,color:"#fff",textShadow:"0 1px 4px #000"}}>{it.t}</div><div style={{fontSize:12,color:"#bbb",marginTop:2}}>{it.show.title} · {it.e}</div></div></ShowImage></div></div>)}</div>
+        <div style={{display:"flex",flexDirection:"column",gap:12,padding:"0 16px"}}>{SHOWS.flatMap(s=>s.clips.map((c,i)=>({...c,show:s,key:`${s.id}c${i}`}))).map(it=><div key={it.key} style={{cursor:"pointer"}} onClick={()=>it.url?window.open(it.url,'_blank','noopener,noreferrer'):sDet(it.show)}><div style={{width:"100%",aspectRatio:"16/9",borderRadius:12,overflow:"hidden",position:"relative"}}><ShowImage src={it.thumb || it.show.posterImage} title={it.t} color={it.show.tc}><div style={{position:"absolute",inset:0,background:"linear-gradient(transparent 30%,rgba(0,0,0,0.8))"}}/><PlayBtn size={48}/><div style={{position:"absolute",bottom:0,left:0,right:0,padding:"24px 12px 10px",zIndex:2}}><div style={{fontSize:14,fontWeight:600,color:"#fff",textShadow:"0 1px 4px #000"}}>{it.t}</div><div style={{fontSize:12,color:"#bbb",marginTop:2}}>{it.show.title} · {it.e}</div></div></ShowImage></div></div>)}</div>
       </div>}
 
       {/* ═══ GAME ═══ */}
@@ -564,17 +593,17 @@ export default function App() {
         <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}><span style={{padding:"3px 10px",background:det.tc,borderRadius:8,fontSize:11,fontWeight:700}}>{det.tag}</span><span style={{fontSize:12,color:"#888"}}>{det.rat} · {det.genre} · {det.ep}화</span></div>
         <div style={{fontSize:14,color:"#999",marginBottom:16,lineHeight:1.5}}>{det.desc}</div>
         <div style={{display:"flex",gap:8,marginBottom:20}}>
-          <a href={det.yt} target="_blank" rel="noopener noreferrer" style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:6,padding:12,background:"#FF2D55",borderRadius:12,color:"#fff",textDecoration:"none",fontWeight:600,fontSize:14}}><Ic.Play/> 유튜브 보기</a>
+          <a href={det.tvingEpUrl} target="_blank" rel="noopener noreferrer" style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:6,padding:12,background:"#FF2D55",borderRadius:12,color:"#fff",textDecoration:"none",fontWeight:600,fontSize:14}}><Ic.Play/> TVING 보기</a>
           {!det.free&&!own.includes(det.id)&&<button onClick={()=>buy(det)} style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:6,padding:12,background:"#333",border:"none",borderRadius:12,color:"#FFD60A",fontWeight:600,fontSize:14,cursor:"pointer"}}><Ic.Coin/>{det.price?.toLocaleString()}P</button>}
           {!det.free&&own.includes(det.id)&&<div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:6,padding:12,background:"#1a2a1a",borderRadius:12,color:"#34C759",fontWeight:600,fontSize:14}}><Ic.Chk/>구매완료</div>}
         </div>
         <div style={{fontSize:15,fontWeight:700,marginBottom:10}}>클립</div>
-        {det.clips.map((c,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0",borderBottom:"1px solid #222"}}>
+        {det.clips.map((c,i)=><div key={i} onClick={()=>c.url&&window.open(c.url,'_blank','noopener,noreferrer')} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0",borderBottom:"1px solid #222",cursor:"pointer"}}>
           <div style={{width:100,height:56,borderRadius:8,overflow:"hidden",flexShrink:0,position:"relative"}}><ShowImage src={c.thumb || det.posterImage} title={c.t} color={det.tc}><div style={{position:"absolute",inset:0,background:"rgba(0,0,0,0.3)"}}/><PlayBtn size={24}/></ShowImage></div>
           <div style={{flex:1,minWidth:0}}><div style={{fontSize:13,fontWeight:500,color:"#fff",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.t}</div><div style={{fontSize:11,color:"#888"}}>{c.e}</div></div>
         </div>)}
         <div style={{fontSize:15,fontWeight:700,margin:"16px 0 10px"}}>쇼츠</div>
-        <div style={{display:"flex",gap:8,overflowX:"auto"}}>{det.shorts.map((sh,i)=><div key={i} style={{minWidth:100,flexShrink:0}}><div style={{width:100,height:140,borderRadius:10,overflow:"hidden",position:"relative"}}><ShowImage src={sh.thumb || det.posterImage} title={sh.t} color={det.tc}><div style={{position:"absolute",inset:0,background:"linear-gradient(transparent 50%,rgba(0,0,0,0.8))"}}/><PlayBtn/><div style={{position:"absolute",bottom:6,left:6,right:6,fontSize:10,color:"#fff",textShadow:"0 1px 3px #000",zIndex:2}}>{sh.t}</div></ShowImage></div></div>)}</div>
+        <div style={{display:"flex",gap:8,overflowX:"auto"}}>{det.shorts.map((sh,i)=><div key={i} onClick={()=>det.tvingUrl&&window.open(det.tvingUrl,'_blank','noopener,noreferrer')} style={{minWidth:100,flexShrink:0,cursor:"pointer"}}><div style={{width:100,height:140,borderRadius:10,overflow:"hidden",position:"relative"}}><ShowImage src={sh.thumb || det.posterImage} title={sh.t} color={det.tc}><div style={{position:"absolute",inset:0,background:"linear-gradient(transparent 50%,rgba(0,0,0,0.8))"}}/><PlayBtn/><div style={{position:"absolute",bottom:6,left:6,right:6,fontSize:10,color:"#fff",textShadow:"0 1px 3px #000",zIndex:2}}>{sh.t}</div></ShowImage></div></div>)}</div>
       </div></Modal>}
 
       {lgM&&<Modal onClose={()=>sLgM(false)}><div style={{padding:"8px 20px 32px",textAlign:"center"}}><div style={{fontSize:28,fontWeight:800,background:"linear-gradient(135deg,#FF2D55,#FF6B35)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:8}}>TVING</div><div style={{fontSize:16,fontWeight:600,marginBottom:4}}>놀이터에 오신 걸 환영해요!</div><div style={{fontSize:13,color:"#888",marginBottom:24}}>로그인하면 포인트 적립, 구매 등 가능</div><button onClick={()=>{sLg(true);sLgM(false);tt("로그인 완료! 🎉");}} style={{width:"100%",padding:14,background:"#FF2D55",border:"none",borderRadius:12,color:"#fff",fontWeight:700,fontSize:16,cursor:"pointer",marginBottom:10}}>티빙 ID로 로그인</button><button onClick={()=>sLgM(false)} style={{width:"100%",padding:14,background:"#333",border:"none",borderRadius:12,color:"#999",fontWeight:600,fontSize:14,cursor:"pointer"}}>나중에</button></div></Modal>}

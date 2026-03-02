@@ -24,6 +24,8 @@ export default function App() {
   const [allM,sAllM]=useState(false);
   const [hi,sHi]=useState(0);
   const [usr,sUsr]=useState(null);
+  const [notifM,sNotifM]=useState(null);
+  const [notifSet,sNotifSet]=useState([]);
 
   // 유저 초기화
   useEffect(()=>{
@@ -200,7 +202,7 @@ export default function App() {
 
       {/* ═══ SCHEDULE ═══ */}
       {tab==="sched"&&<div style={{paddingBottom:80}}><div style={{padding:"0 16px 16px"}}><div style={{fontSize:20,fontWeight:700}}>공개 일정</div></div>
-        <div style={{display:"flex",flexDirection:"column",gap:8,padding:"0 16px"}}>{SCHED.map((d,di)=>{const td=new Date().getDay();const mp=[6,0,1,2,3,4,5];const ti=mp[td];return<div key={d.day} style={{background:di===ti?"#1a1025":"#1C1C1E",border:di===ti?"1px solid #5856D6":"1px solid #222",borderRadius:14,padding:14,position:"relative"}}>{di===ti&&<div style={{position:"absolute",top:-8,right:12,background:"#5856D6",padding:"2px 10px",borderRadius:8,fontSize:10,fontWeight:700}}>오늘</div>}<div style={{display:"flex",alignItems:"center",gap:12}}><div style={{width:36,height:36,borderRadius:10,background:di===ti?"#5856D6":"#333",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:15,flexShrink:0}}>{d.day}</div><div style={{flex:1}}>{d.shows.length===0?<div style={{fontSize:13,color:"#555"}}>편성 없음</div>:d.shows.map((s,si)=><div key={si} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"4px 0"}}><div><span style={{fontSize:14,fontWeight:500}}>{s.t}</span><span style={{fontSize:12,color:"#888",marginLeft:8}}>{s.time}</span></div><span style={{fontSize:10,padding:"2px 8px",borderRadius:6,background:s.tag==="LIVE"?"#FF2D5533":s.tag==="NEW"?"#5856D633":"#FF950033",color:s.tag==="LIVE"?"#FF2D55":s.tag==="NEW"?"#5856D6":"#FF9500",fontWeight:600}}>{s.tag}</span></div>)}</div></div></div>;})}</div>
+        <div style={{display:"flex",flexDirection:"column",gap:8,padding:"0 16px"}}>{SCHED.map((d,di)=>{const td=new Date().getDay();const mp=[6,0,1,2,3,4,5];const ti=mp[td];return<div key={d.day} style={{background:di===ti?"#1a1025":"#1C1C1E",border:di===ti?"1px solid #5856D6":"1px solid #222",borderRadius:14,padding:14,position:"relative"}}>{di===ti&&<div style={{position:"absolute",top:-8,right:12,background:"#5856D6",padding:"2px 10px",borderRadius:8,fontSize:10,fontWeight:700}}>오늘</div>}<div style={{display:"flex",alignItems:"center",gap:12}}><div style={{width:36,height:36,borderRadius:10,background:di===ti?"#5856D6":"#333",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:15,flexShrink:0}}>{d.day}</div><div style={{flex:1}}>{d.shows.length===0?<div style={{fontSize:13,color:"#555"}}>편성 없음</div>:d.shows.map((s,si)=>{const nk=`${di}-${si}`;const isSet=notifSet.includes(nk);return<div key={si} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"4px 0"}}><div><span style={{fontSize:14,fontWeight:500}}>{s.t}</span><span style={{fontSize:12,color:"#888",marginLeft:8}}>{s.time}</span></div><div style={{display:"flex",alignItems:"center",gap:6}}><button onClick={()=>!isSet&&sNotifM({title:s.t,time:s.time,day:d.day,key:nk})} style={{background:isSet?"#2a2a2a":"#FF2D5522",color:isSet?"#666":"#FF2D55",border:isSet?"1px solid #333":"1px solid #FF2D5544",borderRadius:20,padding:"3px 10px",fontSize:11,fontWeight:600,cursor:isSet?"default":"pointer",whiteSpace:"nowrap"}}>{isSet?"🔔 설정됨":"알림 받기"}</button><span style={{fontSize:10,padding:"2px 8px",borderRadius:6,background:s.tag==="LIVE"?"#FF2D5533":s.tag==="NEW"?"#5856D633":"#FF950033",color:s.tag==="LIVE"?"#FF2D55":s.tag==="NEW"?"#5856D6":"#FF9500",fontWeight:600}}>{s.tag}</span></div></div>;})}</div></div></div>;})}</div>
       </div>}
 
       {/* ═══ MY ═══ */}
@@ -320,6 +322,20 @@ export default function App() {
       {subM&&<Modal onClose={()=>sSubM(false)}><div style={{padding:"8px 20px 32px"}}><div style={{fontSize:20,fontWeight:700,marginBottom:20}}>구독권</div>{SUBS.map((s,i)=><div key={i} style={{background:"#111",border:`1px solid ${s.c}44`,borderRadius:14,padding:18,marginBottom:10,position:"relative"}}>{i===2&&<div style={{position:"absolute",top:0,right:0,background:s.c,padding:"4px 12px",borderRadius:"0 0 0 10px",fontSize:10,fontWeight:700}}>추천</div>}<div style={{fontSize:16,fontWeight:700,color:s.c}}>{s.name}</div><div style={{fontSize:22,fontWeight:800,marginBottom:10}}>₩{s.price.toLocaleString()}<span style={{fontSize:13,color:"#888",fontWeight:400}}>/월</span></div><div style={{display:"flex",flexWrap:"wrap",gap:6}}>{s.ft.map((f,fi)=><span key={fi} style={{display:"flex",alignItems:"center",gap:4,fontSize:12,color:"#aaa"}}><Ic.Chk/>{f}</span>)}</div><button onClick={()=>{window.open("https://www.tving.com/bill/subscription/plan","_blank","noopener,noreferrer");sSubM(false);}} style={{width:"100%",marginTop:12,padding:10,background:`${s.c}22`,border:`1px solid ${s.c}44`,borderRadius:10,color:s.c,fontWeight:600,fontSize:14,cursor:"pointer"}}>구독하기</button></div>)}</div></Modal>}
 
       {allM&&<Modal onClose={()=>sAllM(false)}><div style={{padding:"8px 20px 32px"}}><div style={{fontSize:20,fontWeight:700,marginBottom:16}}>전체 VOD</div>{SHOWS.map(s=><div key={s.id} onClick={()=>{sAllM(false);sDet(s);}} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 0",borderBottom:"1px solid #222",cursor:"pointer"}}><div style={{width:56,height:56,borderRadius:10,overflow:"hidden",flexShrink:0}}><ShowImage src={s.posterImage} title={s.title} color={s.tc}/></div><div style={{flex:1,minWidth:0}}><div style={{display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:14,fontWeight:600}}>{s.title}</span><span style={{padding:"1px 6px",background:s.tc,borderRadius:4,fontSize:9,fontWeight:700}}>{s.tag}</span></div><div style={{fontSize:12,color:"#888",marginTop:2}}>{s.genre} · {s.ep}화</div></div><div style={{flexShrink:0}}>{s.free?<span style={{fontSize:12,color:"#34C759",fontWeight:600}}>무료</span>:own.includes(s.id)?<Ic.Chk/>:<span style={{fontSize:12,color:"#FFD60A",fontWeight:600}}>{s.price?.toLocaleString()}P</span>}</div></div>)}</div></Modal>}
+
+      {notifM&&<Modal onClose={()=>sNotifM(null)}><div style={{padding:"8px 20px 32px",textAlign:"center"}}>
+        <div style={{fontSize:44,marginBottom:12}}>🔔</div>
+        <div style={{fontSize:18,fontWeight:700,marginBottom:16}}>알림 설정</div>
+        <div style={{background:"#111",borderRadius:12,padding:"14px 16px",marginBottom:20,textAlign:"left"}}>
+          <div style={{fontSize:12,color:"#888",marginBottom:4}}>{notifM.day}요일 · {notifM.time}</div>
+          <div style={{fontSize:15,fontWeight:600,color:"#fff"}}>{notifM.title}</div>
+        </div>
+        <div style={{fontSize:13,color:"#888",marginBottom:24}}>방송 시작 시 알림을 전송드리겠습니다.</div>
+        <div style={{display:"flex",gap:8}}>
+          <button onClick={()=>sNotifM(null)} style={{flex:1,padding:14,background:"#333",border:"none",borderRadius:12,color:"#999",fontWeight:600,fontSize:14,cursor:"pointer"}}>취소</button>
+          <button onClick={()=>{sNotifSet(n=>[...n,notifM.key]);sNotifM(null);tt("🔔 알림을 전송드리겠습니다!");}} style={{flex:1,padding:14,background:"#FF2D55",border:"none",borderRadius:12,color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer"}}>확인</button>
+        </div>
+      </div></Modal>}
 
       {tst&&<div style={{position:"fixed",top:60,left:"50%",transform:"translateX(-50%)",background:"#333",color:"#fff",padding:"10px 20px",borderRadius:12,fontSize:14,fontWeight:500,zIndex:300,boxShadow:"0 4px 20px #0008",animation:"fi .3s"}}>{tst}</div>}
     </div>

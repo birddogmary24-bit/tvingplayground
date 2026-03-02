@@ -49,7 +49,7 @@ export default function App() {
   };
 
   // 빨간약 추가 (콘텐츠 시청 시 호출) + 빨간약 2개 → 파란약 1개 자동 전환
-  const addRedPill=()=>{try{const d=localStorage.getItem("catgame_save");if(d){const s=JSON.parse(d);s.redPills=(s.redPills||0)+1;const lv=s.level||1;if(lv>10&&s.redPills>=2){const r=getLevelReq(lv);if((s.bluePills||0)<r.blue){s.redPills-=2;s.bluePills=(s.bluePills||0)+1;}}localStorage.setItem("catgame_save",JSON.stringify(s));}}catch{}};
+  const addRedPill=()=>{try{const d=localStorage.getItem("catgame_save");if(d){const s=JSON.parse(d);s.redPills=(s.redPills||0)+1;const lv=s.level||1;if(s.redPills>=2){const r=getLevelReq(lv);if(r.blue===0||(s.bluePills||0)<r.blue){s.redPills-=2;s.bluePills=(s.bluePills||0)+1;}}localStorage.setItem("catgame_save",JSON.stringify(s));}}catch{}};
   useEffect(()=>{const t=setInterval(()=>sHi(h=>(h+1)%3),4000);return()=>clearInterval(t);},[]);
   const hs=[SHOWS[0],SHOWS[1],SHOWS[5]];const h=hs[hi];
 

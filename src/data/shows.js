@@ -86,12 +86,12 @@ export const SHOWS = [
 
     // ─ 쇼츠 (6개) ───────────────────────────────
     shorts: [
-      { id: "ex4-s1", title: "최종 선택 직전 두근거리는 3초", shortsThumbnail: ph(360, 640, "#FF2D55", "환승4") },
-      { id: "ex4-s2", title: "재회의 순간, 멈추는 시간", shortsThumbnail: ph(360, 640, "#FF2D55", "환승4") },
-      { id: "ex4-s3", title: "진솔한 고백 후 흘러내린 눈물", shortsThumbnail: ph(360, 640, "#FF2D55", "환승4") },
-      { id: "ex4-s4", title: "설레는 바다 데이트 명장면", shortsThumbnail: ph(360, 640, "#FF2D55", "환승4") },
-      { id: "ex4-s5", title: "과몰입 유발 장면 TOP3", shortsThumbnail: ph(360, 640, "#FF2D55", "환승4") },
-      { id: "ex4-s6", title: "진심 게임 타임 하이라이트", shortsThumbnail: ph(360, 640, "#FF2D55", "환승4") },
+      { id: "ex4-s1", title: "최종 선택 직전 두근거리는 3초", shortsThumbnail: "https://image.tving.com/ntgs/news/clip/20260114163400/thumbnail/L00000268528.png" },
+      { id: "ex4-s2", title: "재회의 순간, 멈추는 시간",       shortsThumbnail: "https://image.tving.com/ntgs/news/clip/20260122153738/thumbnail/L00000273070.png" },
+      { id: "ex4-s3", title: "진솔한 고백 후 흘러내린 눈물",  shortsThumbnail: "https://image.tving.com/ntgs/news/clip/20260122154210/thumbnail/L00000273074.png" },
+      { id: "ex4-s4", title: "설레는 바다 데이트 명장면",      shortsThumbnail: "https://image.tving.com/ntgs/news/clip/20260129114930/thumbnail/L00000276831.png" },
+      { id: "ex4-s5", title: "과몰입 유발 장면 TOP3",          shortsThumbnail: "https://image.tving.com/ntgs/news/clip/20260129123142/thumbnail/L00000276855.png" },
+      { id: "ex4-s6", title: "진심 게임 타임 하이라이트",      shortsThumbnail: "https://image.tving.com/ntgs/news/clip/20260122154905/thumbnail/L00000273076.png" },
     ],
   },
 
@@ -135,11 +135,11 @@ export const SHOWS = [
 
     // ─ 쇼츠 (5개) ───────────────────────────────
     shorts: [
-      { id: "dx-s1", title: "백아진 냉혹한 눈빛 모음", shortsThumbnail: ph(360, 640, "#5856D6", "친애하는X") },
-      { id: "dx-s2", title: "반전 엔딩 직전 긴장감",    shortsThumbnail: ph(360, 640, "#5856D6", "친애하는X") },
-      { id: "dx-s3", title: "김유정 명연기 씬 모음",    shortsThumbnail: ph(360, 640, "#5856D6", "친애하는X") },
-      { id: "dx-s4", title: "소름 돋는 복선 모음.zip",  shortsThumbnail: ph(360, 640, "#5856D6", "친애하는X") },
-      { id: "dx-s5", title: "\"넌 내가 누군지 모르잖아\" 명대사", shortsThumbnail: ph(360, 640, "#5856D6", "친애하는X") },
+      { id: "dx-s1", title: "백아진 냉혹한 눈빛 모음",          shortsThumbnail: "https://image.tving.com/ntgs/contents/CTC/caip/CAIP0200/ko/20251021/1250/P001776344.jpg" },
+      { id: "dx-s2", title: "반전 엔딩 직전 긴장감",             shortsThumbnail: "https://image.tving.com/ntgs/contents/CTC/caip/CAIP0200/ko/20251021/1250/P001776344.jpg" },
+      { id: "dx-s3", title: "김유정 명연기 씬 모음",             shortsThumbnail: "https://image.tving.com/ntgs/contents/CTC/caip/CAIP0200/ko/20251021/1250/P001776344.jpg" },
+      { id: "dx-s4", title: "소름 돋는 복선 모음.zip",           shortsThumbnail: "https://image.tving.com/ntgs/contents/CTC/caip/CAIP0200/ko/20251021/1250/P001776344.jpg" },
+      { id: "dx-s5", title: "\"넌 내가 누군지 모르잖아\" 명대사", shortsThumbnail: "https://image.tving.com/ntgs/contents/CTC/caip/CAIP0200/ko/20251021/1250/P001776344.jpg" },
     ],
   },
 
@@ -184,12 +184,12 @@ export const SHOWS = [
 
     // ─ 쇼츠 (6개) ───────────────────────────────
     shorts: [
-      { id: "jg-s1", title: "이한영 명대사 모음",         shortsThumbnail: ph(360, 640, "#FF9500", "판사이한영") },
-      { id: "jg-s2", title: "판결문 낭독 명장면",         shortsThumbnail: ph(360, 640, "#FF9500", "판사이한영") },
-      { id: "jg-s3", title: "지성 눈빛 변화 씬 모음",     shortsThumbnail: ph(360, 640, "#FF9500", "판사이한영") },
-      { id: "jg-s4", title: "방청객 울게 만든 무죄 선고", shortsThumbnail: ph(360, 640, "#FF9500", "판사이한영") },
-      { id: "jg-s5", title: "법정 최강 명장면 TOP5",      shortsThumbnail: ph(360, 640, "#FF9500", "판사이한영") },
-      { id: "jg-s6", title: "\"정의는 반드시 이긴다\" 명대사", shortsThumbnail: ph(360, 640, "#FF9500", "판사이한영") },
+      { id: "jg-s1", title: "이한영 명대사 모음",              shortsThumbnail: "https://image.tving.com/ntgs/contents/CTC/caip/CAIP0200/ko/20251205/0815/P001780004.jpg" },
+      { id: "jg-s2", title: "판결문 낭독 명장면",              shortsThumbnail: "https://image.tving.com/ntgs/contents/CTC/caip/CAIP0200/ko/20251205/0815/P001780004.jpg" },
+      { id: "jg-s3", title: "지성 눈빛 변화 씬 모음",          shortsThumbnail: "https://image.tving.com/ntgs/contents/CTC/caip/CAIP0200/ko/20251205/0815/P001780004.jpg" },
+      { id: "jg-s4", title: "방청객 울게 만든 무죄 선고",      shortsThumbnail: "https://image.tving.com/ntgs/contents/CTC/caip/CAIP0200/ko/20251205/0815/P001780004.jpg" },
+      { id: "jg-s5", title: "법정 최강 명장면 TOP5",           shortsThumbnail: "https://image.tving.com/ntgs/contents/CTC/caip/CAIP0200/ko/20251205/0815/P001780004.jpg" },
+      { id: "jg-s6", title: "\"정의는 반드시 이긴다\" 명대사", shortsThumbnail: "https://image.tving.com/ntgs/contents/CTC/caip/CAIP0200/ko/20251205/0815/P001780004.jpg" },
     ],
   },
 
@@ -242,12 +242,12 @@ export const SHOWS = [
 
     // ─ 쇼츠 (6개) ───────────────────────────────
     shorts: [
-      { id: "uq-s1", title: "유재석 리액션 레전드 모음",   shortsThumbnail: ph(360, 640, "#34C759", "유퀴즈") },
-      { id: "uq-s2", title: "사연자가 남긴 명언 TOP5",     shortsThumbnail: ph(360, 640, "#34C759", "유퀴즈") },
-      { id: "uq-s3", title: "퀴즈 정답 맞추는 순간 모음", shortsThumbnail: ph(360, 640, "#34C759", "유퀴즈") },
-      { id: "uq-s4", title: "조세호 웃음 참기 실패 모음", shortsThumbnail: ph(360, 640, "#34C759", "유퀴즈") },
-      { id: "uq-s5", title: "눈물 없이 못 보는 사연 BEST", shortsThumbnail: ph(360, 640, "#34C759", "유퀴즈") },
-      { id: "uq-s6", title: "일반인 명언 즉석 명예의전당", shortsThumbnail: ph(360, 640, "#34C759", "유퀴즈") },
+      { id: "uq-s1", title: "유재석 리액션 레전드 모음",   shortsThumbnail: "https://image.tving.com/ntgs/news/clip/20260227005650/thumbnail/L00000292254.png" },
+      { id: "uq-s2", title: "사연자가 남긴 명언 TOP5",     shortsThumbnail: "https://image.tving.com/ntgs/news/clip/20260212221649/thumbnail/L00000285131.png" },
+      { id: "uq-s3", title: "퀴즈 정답 맞추는 순간 모음",  shortsThumbnail: "https://image.tving.com/ntgs/news/clip/20260227003723/thumbnail/L00000292248.png" },
+      { id: "uq-s4", title: "조세호 웃음 참기 실패 모음",  shortsThumbnail: "https://image.tving.com/ntgs/news/clip/20260227005427/thumbnail/L00000292252.png" },
+      { id: "uq-s5", title: "눈물 없이 못 보는 사연 BEST", shortsThumbnail: "https://image.tving.com/ntgs/news/clip/20260212221557/thumbnail/L00000285130.png" },
+      { id: "uq-s6", title: "일반인 명언 즉석 명예의전당", shortsThumbnail: "https://image.tving.com/ntgs/news/clip/20260212221408/thumbnail/L00000285128.png" },
     ],
   },
 
@@ -293,11 +293,11 @@ export const SHOWS = [
 
     // ─ 쇼츠 (5개) ───────────────────────────────
     shorts: [
-      { id: "ge-s1", title: "출연진 반응 오버 모음.zip",    shortsThumbnail: ph(360, 640, "#E8453C", "대탈출") },
-      { id: "ge-s2", title: "고경표 먹방 하이라이트",       shortsThumbnail: ph(360, 640, "#E8453C", "대탈출") },
-      { id: "ge-s3", title: "소름 돋는 복선 재발견 모음",   shortsThumbnail: ph(360, 640, "#E8453C", "대탈출") },
-      { id: "ge-s4", title: "백현 두뇌풀가동 순간 모음",    shortsThumbnail: ph(360, 640, "#E8453C", "대탈출") },
-      { id: "ge-s5", title: "유병재 컴백 감동 명장면",      shortsThumbnail: ph(360, 640, "#E8453C", "대탈출") },
+      { id: "ge-s1", title: "출연진 반응 오버 모음.zip",  shortsThumbnail: "https://image.tving.com/ntgs/news/clip/20250816193508/thumbnail/L00000033831.jpg" },
+      { id: "ge-s2", title: "고경표 먹방 하이라이트",     shortsThumbnail: "https://image.tving.com/ntgs/news/clip/20250802131121/thumbnail/L00000026436.png" },
+      { id: "ge-s3", title: "소름 돋는 복선 재발견 모음", shortsThumbnail: "https://image.tving.com/ntgs/news/clip/20250802130721/thumbnail/L00000026428.png" },
+      { id: "ge-s4", title: "백현 두뇌풀가동 순간 모음",  shortsThumbnail: "https://image.tving.com/ntgs/news/clip/20250802130921/thumbnail/L00000026432.png" },
+      { id: "ge-s5", title: "유병재 컴백 감동 명장면",    shortsThumbnail: "https://image.tving.com/ntgs/news/clip/20250726154403/thumbnail/L00000022238.png" },
     ],
   },
 
@@ -352,12 +352,12 @@ export const SHOWS = [
 
     // ─ 쇼츠 (6개) ───────────────────────────────
     shorts: [
-      { id: "sm-s1", title: "MILLI 60초 랩 레전드 씬",      shortsThumbnail: ph(360, 640, "#F5A623", "쇼미12") },
-      { id: "sm-s2", title: "심사위원 반응 폭발 모음",       shortsThumbnail: ph(360, 640, "#F5A623", "쇼미12") },
-      { id: "sm-s3", title: "프리스타일 레전드 30초 씬",     shortsThumbnail: ph(360, 640, "#F5A623", "쇼미12") },
-      { id: "sm-s4", title: "탈락 후 인터뷰 눈물 모음",     shortsThumbnail: ph(360, 640, "#F5A623", "쇼미12") },
-      { id: "sm-s5", title: "관객 반응 카메라 컷 모음",     shortsThumbnail: ph(360, 640, "#F5A623", "쇼미12") },
-      { id: "sm-s6", title: "팀 미션 하이라이트 풀버전",    shortsThumbnail: ph(360, 640, "#F5A623", "쇼미12") },
+      { id: "sm-s1", title: "MILLI 60초 랩 레전드 씬",   shortsThumbnail: "https://image.tving.com/ntgs/news/clip/20260214011801/thumbnail/L00000285827.png" },
+      { id: "sm-s2", title: "심사위원 반응 폭발 모음",   shortsThumbnail: "https://image.tving.com/ntgs/news/clip/20260223103951/thumbnail/L00000289510.jpg" },
+      { id: "sm-s3", title: "프리스타일 레전드 30초 씬", shortsThumbnail: "https://image.tving.com/ntgs/news/clip/20260206224219/thumbnail/L00000281788.png" },
+      { id: "sm-s4", title: "탈락 후 인터뷰 눈물 모음",  shortsThumbnail: "https://image.tving.com/ntgs/news/clip/20260206231658/thumbnail/L00000281821.png" },
+      { id: "sm-s5", title: "관객 반응 카메라 컷 모음",  shortsThumbnail: "https://image.tving.com/ntgs/news/clip/20260220230519/thumbnail/L00000288663.jpg" },
+      { id: "sm-s6", title: "팀 미션 하이라이트 풀버전", shortsThumbnail: "https://image.tving.com/ntgs/news/clip/20260220231003/thumbnail/L00000288675.png" },
     ],
   },
 
@@ -399,12 +399,12 @@ export const SHOWS = [
 
     // ─ 쇼츠 (6개) ───────────────────────────────
     shorts: [
-      { id: "uv-s1", title: "배인혁 설레 눈빛 모음.zip",           shortsThumbnail: ph(360, 640, "#007AFF", "우주를줄게") },
-      { id: "uv-s2", title: "아기 우주 귀여움 폭발 모음",          shortsThumbnail: ph(360, 640, "#007AFF", "우주를줄게") },
-      { id: "uv-s3", title: "노정의 감정씬 하이라이트",            shortsThumbnail: ph(360, 640, "#007AFF", "우주를줄게") },
-      { id: "uv-s4", title: "사돈남녀 동거 좌충우돌 명장면",       shortsThumbnail: ph(360, 640, "#007AFF", "우주를줄게") },
-      { id: "uv-s5", title: "두 사람 가까워지는 설레는 순간",      shortsThumbnail: ph(360, 640, "#007AFF", "우주를줄게") },
-      { id: "uv-s6", title: "\"우주를 줄게\" 명장면 예고",         shortsThumbnail: ph(360, 640, "#007AFF", "우주를줄게") },
+      { id: "uv-s1", title: "배인혁 설레 눈빛 모음.zip",     shortsThumbnail: "https://image.tving.com/ntgs/contents/CTC/caip/CAIP0200/ko/20260128/0816/P001782227.jpg" },
+      { id: "uv-s2", title: "아기 우주 귀여움 폭발 모음",    shortsThumbnail: "https://image.tving.com/ntgs/contents/CTC/caip/CAIP0200/ko/20260128/0816/P001782227.jpg" },
+      { id: "uv-s3", title: "노정의 감정씬 하이라이트",      shortsThumbnail: "https://image.tving.com/ntgs/contents/CTC/caip/CAIP0200/ko/20260128/0816/P001782227.jpg" },
+      { id: "uv-s4", title: "사돈남녀 동거 좌충우돌 명장면", shortsThumbnail: "https://image.tving.com/ntgs/contents/CTC/caip/CAIP0200/ko/20260128/0816/P001782227.jpg" },
+      { id: "uv-s5", title: "두 사람 가까워지는 설레는 순간", shortsThumbnail: "https://image.tving.com/ntgs/contents/CTC/caip/CAIP0200/ko/20260128/0816/P001782227.jpg" },
+      { id: "uv-s6", title: "\"우주를 줄게\" 명장면 예고",   shortsThumbnail: "https://image.tving.com/ntgs/contents/CTC/caip/CAIP0200/ko/20260128/0816/P001782227.jpg" },
     ],
   },
 ];

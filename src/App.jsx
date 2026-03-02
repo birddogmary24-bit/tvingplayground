@@ -128,15 +128,15 @@ export default function App() {
         {/* VOD */}
         <SH t="인기 VOD" s="지금 핫한 콘텐츠" onMore={()=>sAllM(true)} />
         <div style={{display:"flex",gap:10,overflowX:"auto",padding:"0 16px 20px"}}>
-          {SHOWS.map(s=><div key={s.id} onClick={()=>sDet(s)} style={{minWidth:130,cursor:"pointer",flexShrink:0}}>
-            <div style={{position:"relative",width:130,height:184,borderRadius:10,overflow:"hidden"}}>
-              <ShowImage src={s.posterImage} title={s.title} genre={s.genre} color={s.tc}>
+          {SHOWS.map(s=><div key={s.id} onClick={()=>sDet(s)} style={{minWidth:230,cursor:"pointer",flexShrink:0}}>
+            <div style={{position:"relative",width:230,height:130,borderRadius:10,overflow:"hidden"}}>
+              <ShowImage src={s.bannerImage} title={s.title} genre={s.genre} color={s.tc}>
                 <div style={{position:"absolute",top:6,left:6,padding:"2px 8px",background:s.tc,borderRadius:6,fontSize:10,fontWeight:700,color:"#fff",zIndex:2}}>{s.tag}</div>
                 {!s.free&&!own.includes(s.id)&&<div style={{position:"absolute",top:6,right:6,color:"#FFD60A",zIndex:2}}><Ic.Lock /></div>}
                 <div style={{position:"absolute",bottom:0,left:0,right:0,height:60,background:"linear-gradient(transparent,rgba(0,0,0,0.8))",zIndex:1}} />
               </ShowImage>
             </div>
-            <div style={{marginTop:6}}><div style={{fontSize:13,fontWeight:600,color:"#fff",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",width:130}}>{s.title}</div><div style={{fontSize:11,color:"#888",marginTop:2}}>{s.genre} · {s.ep}화</div></div>
+            <div style={{marginTop:6}}><div style={{fontSize:13,fontWeight:600,color:"#fff",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",width:230}}>{s.title}</div><div style={{fontSize:11,color:"#888",marginTop:2}}>{s.genre} · {s.ep}화</div></div>
           </div>)}
         </div>
 

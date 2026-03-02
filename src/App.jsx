@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { SHOWS, loadUser, saveUser, generateUser, GAMES, SCHED, SUBS, FAKE_USERS, GAME_ICONS, GAME_NAMES } from "./constants.js";
+import { SHOWS, loadUser, saveUser, generateUser, GAMES, SCHED, SUBS, FAKE_USERS, GAME_ICONS, GAME_NAMES, getLevelReq } from "./constants.js";
 import { getLevel, getLvProgress, relTime } from "./utils.js";
 import Ic from "./Icons.jsx";
 import ShowImage from "./components/ShowImage.jsx";
@@ -48,8 +48,8 @@ export default function App() {
     }
   };
 
-  // 빨간약 추가 (콘텐츠 시청 시 호출)
-  const addRedPill=()=>{try{const d=localStorage.getItem("catgame_save");if(d){const s=JSON.parse(d);s.redPills=(s.redPills||0)+1;localStorage.setItem("catgame_save",JSON.stringify(s));}}catch{}};
+  // 빨간약 추가 (콘텐츠 시청 시 호출) + 빨간약 2개 → 파란약 1개 자동 전환
+  const addRedPill=()=>{try{const d=localStorage.getItem("catgame_save");if(d){const s=JSON.parse(d);s.redPills=(s.redPills||0)+1;const lv=s.level||1;if(lv>10&&s.redPills>=2){const r=getLevelReq(lv);if((s.bluePills||0)<r.blue){s.redPills-=2;s.bluePills=(s.bluePills||0)+1;}}localStorage.setItem("catgame_save",JSON.stringify(s));}}catch{}};
   useEffect(()=>{const t=setInterval(()=>sHi(h=>(h+1)%3),4000);return()=>clearInterval(t);},[]);
   const hs=[SHOWS[0],SHOWS[1],SHOWS[5]];const h=hs[hi];
 
@@ -170,7 +170,7 @@ export default function App() {
         {/* Games */}
         <SH t="🎮 미니게임" s="게임하고 포인트!" onMore={()=>sTab("game")} />
         <div style={{display:"flex",gap:10,overflowX:"auto",padding:"0 16px 20px"}}>
-          {GAMES.slice(0,3).map(g=><button key={g.id} onClick={()=>{if(g.id==="quiz"||g.id==="roulette"||g.id==="memory"||g.id==="catgame"){sGm(g.id);sTab("game");}else tt("곧 오픈! 🎮");}} style={{minWidth:150,background:`linear-gradient(135deg,${g.c}22,#1C1C1E)`,border:`1px solid ${g.c}33`,borderRadius:14,padding:14,textAlign:"left",cursor:"pointer",flexShrink:0}}>
+          {GAMES.slice(0,3).map(g=><button key={g.id} onClick={()=>{if(g.id==="quiz"||g.id==="roulette"||g.id==="memory"||g.id==="catgame"||g.id==="wordchain"){sGm(g.id);sTab("game");}else tt("곧 오픈! 🎮");}} style={{minWidth:150,background:`linear-gradient(135deg,${g.c}22,#1C1C1E)`,border:`1px solid ${g.c}33`,borderRadius:14,padding:14,textAlign:"left",cursor:"pointer",flexShrink:0}}>
             <span style={{fontSize:28}}>{g.icon}</span><div style={{fontSize:13,fontWeight:600,color:"#fff",marginTop:8}}>{g.name}</div><div style={{display:"flex",alignItems:"center",gap:4,marginTop:4}}><Ic.Coin /><span style={{fontSize:11,color:"#FFD60A"}}>최대 {g.pts}P</span></div>
           </button>)}
         </div>

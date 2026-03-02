@@ -102,11 +102,14 @@ export default function WordChain({ onDone, onRew }) {
   const [target, setTarget] = useState("");
   const [used, setUsed] = useState(new Set());
   const [round, setRound] = useState(0);
-  const [timer, setTimer] = useState(15);
+  const [timer, setTimer] = useState(30);
   const [myTurn, setMyTurn] = useState(false);
   const [result, setResult] = useState(null);
   const [err, setErr] = useState("");
   const [aiThinking, setAiThinking] = useState(false);
+  const [hint, setHint] = useState(null);
+  const [hintUsed, setHintUsed] = useState(false);
+  const [hintCount, setHintCount] = useState(0);
   const aiRef = useRef(false);
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
@@ -139,7 +142,7 @@ export default function WordChain({ onDone, onRew }) {
       setMsgs(m => [...m, { type: "ai", word: pick.w, cat: pick.c, last }]);
       setTarget(last);
       setMyTurn(true);
-      setTimer(15);
+      setTimer(30);
       aiRef.current = false;
       setAiThinking(false);
       setTimeout(() => inputRef.current?.focus(), 100);
@@ -174,7 +177,7 @@ export default function WordChain({ onDone, onRew }) {
     setMsgs([{ type: "system", text: "게임 시작!" }, { type: "ai", word: first.w, cat: first.c, last }]);
     setTarget(last);
     setMyTurn(true);
-    setTimer(15);
+    setTimer(30);
     setRound(0);
     setTimeout(() => inputRef.current?.focus(), 200);
   };
@@ -196,12 +199,29 @@ export default function WordChain({ onDone, onRew }) {
     setInput("");
     setTarget(last);
     setMyTurn(false);
+    setHint(null);
+    setHintUsed(false);
+  };
+
+  // 힌트 보기
+  const showHint = () => {
+    if (hintUsed) return;
+    const cands = (WC_IDX[target] || []).map(i => WC_WORDS[i]).filter(e => !used.has(e.w));
+    if (cands.length > 0) {
+      const pick = cands[Math.floor(Math.random() * cands.length)];
+      setHint(pick.w.slice(0, 2) + "○".repeat(Math.max(pick.w.length - 2, 1)) + "...");
+    } else {
+      setHint("힌트 없음!");
+    }
+    setHintUsed(true);
+    setHintCount(c => c + 1);
   };
 
   const endGame = (res) => {
     setResult(res);
     setPhase("done");
-    const pts = Math.min(10 + round * 5, 40);
+    const basePts = Math.min(10 + round * 5, 40);
+    const pts = Math.max(basePts - hintCount * 3, 5);
     onRew(pts, "wordchain", { correct: round, total: round });
   };
 
@@ -219,7 +239,8 @@ export default function WordChain({ onDone, onRew }) {
           • AI가 먼저 단어를 말해요<br/>
           • 마지막 글자로 시작하는 단어를 이어가세요<br/>
           • 같은 단어는 한 번만 사용 가능<br/>
-          • 제한 시간: 턴당 15초<br/>
+          • 제한 시간: 턴당 30초<br/>
+          • 막히면 💡힌트 버튼을 눌러보세요<br/>
           • 많이 이을수록 높은 점수!
         </div>
       </div>
@@ -231,14 +252,15 @@ export default function WordChain({ onDone, onRew }) {
 
   // ─── Done 화면 ───
   if (phase === "done") {
-    const pts = Math.min(10 + round * 5, 40);
+    const basePts = Math.min(10 + round * 5, 40);
+    const pts = Math.max(basePts - hintCount * 3, 5);
     return (
       <div style={{padding:"40px 16px",textAlign:"center"}}>
         <div style={{fontSize:56,marginBottom:12}}>{result === "win" ? "🎉" : result === "timeout" ? "⏰" : "😅"}</div>
         <div style={{fontSize:22,fontWeight:800,marginBottom:6}}>
           {result === "win" ? "승리!" : result === "timeout" ? "시간 초과!" : "아쉽네요!"}
         </div>
-        <div style={{fontSize:15,color:"#999",marginBottom:20}}>{round}라운드 생존!</div>
+        <div style={{fontSize:15,color:"#999",marginBottom:20}}>{round}라운드 생존!{hintCount > 0 && ` (힌트 ${hintCount}회)`}</div>
         <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"#1C1C1E",borderRadius:14,padding:"12px 24px",marginBottom:30}}>
           <span style={{fontSize:24}}>💰</span>
           <span style={{fontSize:20,fontWeight:800,color:"#FFD60A"}}>+{pts}P</span>
@@ -305,8 +327,20 @@ export default function WordChain({ onDone, onRew }) {
         </div>
         {/* 타이머 바 */}
         <div style={{height:3,background:"#222",borderRadius:2,marginBottom:10,overflow:"hidden"}}>
-          <div style={{height:"100%",width:`${(timer/15)*100}%`,background:timerColor,borderRadius:2,transition:"width 1s linear"}}/>
+          <div style={{height:"100%",width:`${(timer/30)*100}%`,background:timerColor,borderRadius:2,transition:"width 1s linear"}}/>
         </div>
+        {/* 힌트 */}
+        {myTurn && (
+          <div style={{marginBottom:8,textAlign:"center"}}>
+            {hint ? (
+              <div style={{fontSize:13,color:"#FF9500",background:"rgba(255,149,0,0.1)",border:"1px solid rgba(255,149,0,0.3)",padding:"6px 12px",borderRadius:8,display:"inline-block"}}>💡 {hint}</div>
+            ) : (
+              <button onClick={showHint} disabled={hintUsed} style={{background:hintUsed?"#333":"rgba(255,149,0,0.15)",border:hintUsed?"1px solid #444":"1px solid rgba(255,149,0,0.4)",borderRadius:8,color:hintUsed?"#666":"#FF9500",padding:"6px 14px",fontSize:12,cursor:hintUsed?"default":"pointer",fontWeight:600}}>
+                💡 힌트 보기 {hintUsed ? "(사용함)" : ""}
+              </button>
+            )}
+          </div>
+        )}
         {/* 에러 메시지 */}
         {err && <div style={{fontSize:12,color:"#FF2D55",marginBottom:6}}>{err}</div>}
         {/* 입력 + 전송 */}

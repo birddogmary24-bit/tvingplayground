@@ -40,9 +40,10 @@ export default function CatGame({ onDone, onGoShorts, onGoClip }) {
   const checkedToday = lastCheck === today;
 
   const req = getLevelReq(level);
-  const canLevelUp = level < 99 && redPills >= req.red && bluePills >= req.blue;
+  const needsBlue = req.blue > 0; // 레벨 11 이상부터 파란약 필요
+  const canLevelUp = level < 99 && redPills >= req.red && (!needsBlue || bluePills >= req.blue);
   const redProgress = Math.min(redPills / req.red, 1);
-  const blueProgress = Math.min(bluePills / req.blue, 1);
+  const blueProgress = needsBlue ? Math.min(bluePills / req.blue, 1) : 1;
 
   const pickProfile = (p) => {
     setProfile(p);
@@ -56,14 +57,22 @@ export default function CatGame({ onDone, onGoShorts, onGoClip }) {
     save(data);
   };
 
+  // 출석체크 (레벨 10 이하: 빨간약, 레벨 11 이상: 파란약)
   const doCheck = () => {
     if (checkedToday) return;
-    const newBlue = bluePills + 1;
-    setBluePills(newBlue);
+    let newRed = redPills, newBlue = bluePills;
+    if (level <= 10) {
+      newRed = redPills + 1;
+      setRedPills(newRed);
+      setPillAnim("red");
+    } else {
+      newBlue = bluePills + 1;
+      setBluePills(newBlue);
+      setPillAnim("blue");
+    }
     setLastCheck(today);
-    setPillAnim("blue");
     setTimeout(() => setPillAnim(null), 1200);
-    save({ profile, cat, level, redPills, bluePills: newBlue, lastCheck: today });
+    save({ profile, cat, level, redPills: newRed, bluePills: newBlue, lastCheck: today });
   };
 
   const doLevelUp = () => {
@@ -226,7 +235,7 @@ export default function CatGame({ onDone, onGoShorts, onGoClip }) {
           </div>
           <div style={{fontSize:10,color:"#666",marginTop:4}}>{redPills}/{req.red} 필요</div>
         </div>
-        <div style={{flex:1,background:"#1C1C1E",borderRadius:12,padding:12,border:"1px solid #5856D633"}}>
+        {needsBlue && <div style={{flex:1,background:"#1C1C1E",borderRadius:12,padding:12,border:"1px solid #5856D633"}}>
           <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
             <span style={{fontSize:16}}>💙</span>
             <span style={{fontSize:12,color:"#8888FF"}}>파란약</span>
@@ -236,7 +245,7 @@ export default function CatGame({ onDone, onGoShorts, onGoClip }) {
             <div style={{width:`${blueProgress*100}%`,height:"100%",background:"#5856D6",borderRadius:2,transition:"width .3s"}} />
           </div>
           <div style={{fontSize:10,color:"#666",marginTop:4}}>{bluePills}/{req.blue} 필요</div>
-        </div>
+        </div>}
       </div>
 
       {/* 레벨업 버튼 */}
@@ -246,7 +255,7 @@ export default function CatGame({ onDone, onGoShorts, onGoClip }) {
           background:canLevelUp?"linear-gradient(135deg,#FFD60A,#FF9500)":"#333",
           border:"none",borderRadius:12,color:canLevelUp?"#000":"#666",
           fontSize:15,fontWeight:700,cursor:canLevelUp?"pointer":"not-allowed"
-        }}>{canLevelUp ? `Lv.${level+1}로 레벨업!` : `레벨업까지 — 💊${Math.max(0,req.red-redPills)} 💙${Math.max(0,req.blue-bluePills)} 더 필요`}</button>
+        }}>{canLevelUp ? `Lv.${level+1}로 레벨업!` : `레벨업까지 — 💊${Math.max(0,req.red-redPills)}${needsBlue ? ` 💙${Math.max(0,req.blue-bluePills)}` : ""} 더 필요`}</button>
       ) : (
         <div style={{width:"100%",padding:14,marginBottom:10,background:"linear-gradient(135deg,#FFD60A,#FF9500)",
           borderRadius:12,textAlign:"center",fontSize:15,fontWeight:800,color:"#000"
@@ -256,11 +265,11 @@ export default function CatGame({ onDone, onGoShorts, onGoClip }) {
       {/* 출석체크 */}
       <button onClick={doCheck} disabled={checkedToday} style={{
         width:"100%",padding:14,marginBottom:10,
-        background:checkedToday?"#1C1C1E":"linear-gradient(135deg,#5856D6,#8B5CF6)",
+        background:checkedToday?"#1C1C1E":level<=10?"linear-gradient(135deg,#FF2D55,#FF6B35)":"linear-gradient(135deg,#5856D6,#8B5CF6)",
         border:checkedToday?"1px solid #333":"none",borderRadius:12,
         color:checkedToday?"#666":"#fff",fontSize:14,fontWeight:600,
         cursor:checkedToday?"not-allowed":"pointer"
-      }}>{checkedToday ? "오늘 출석 완료 ✅" : "출석체크 💙 파란약 받기"}</button>
+      }}>{checkedToday ? "오늘 출석 완료 ✅" : level <= 10 ? "출석체크 💊 빨간약 받기" : "출석체크 💙 파란약 받기"}</button>
 
       {/* 콘텐츠 시청 */}
       <div style={{display:"flex",gap:8}}>

@@ -61,39 +61,24 @@
 
 ---
 
-### [2026-03-01] PWA 아이콘을 PNG 대신 SVG로 생성
+### [2026-03-01] App.jsx 모놀리식 → 모듈 분리 리팩터링
 **상태**: 확정
-**결정 내용**: PWA 앱 아이콘(192x192, 512x512, apple-touch-icon)을 PNG 대신 SVG 포맷으로 생성
-**배경**: CLI 환경에서 `sharp`, `canvas`, `Jimp` 등 이미지 처리 라이브러리 설치가 불안정하고 빌드 의존성이 증가함. 브라우저와 Vercel 빌드 환경에서 네이티브 이미지 변환이 불가능했음.
+**결정 내용**: App.jsx 1,010줄을 10개 모듈(constants.js, utils.js, Icons.jsx, 7개 컴포넌트)로 분리
+**배경**: 기능 추가(명장면 모드, 야옹이 키우기, 끝말잇기 등)가 누적되며 App.jsx가 1,000줄을 초과. CLAUDE.md의 "파일당 500~700줄 이내" 규칙 위반.
 **검토한 대안들**:
-- 대안 A: `sharp` 라이브러리로 PNG 생성 — 네이티브 바이너리 의존, 빌드 환경마다 설치 불안정
-- 대안 B: Figma/외부 도구로 사전 제작 후 커밋 — 수작업 필요, 자동화 불가
-- 대안 C: SVG 아이콘 생성 — 의존성 없음, Node 기본 `fs`만 사용, 벡터라 모든 해상도에서 선명
-**최종 선택 이유**: SVG는 모던 브라우저에서 PWA manifest 아이콘으로 완전 지원. Node.js 표준 `fs`만으로 생성 가능해 CI/빌드 환경 의존성 제로. 벡터 특성상 아이콘 품질 이슈 없음.
-**영향 범위**: `scripts/generate-icons.js`, `public/pwa-*.svg`, `vite.config.js` manifest icons 배열
+- 대안 A: 기능별 페이지 컴포넌트 분리 (라우터 도입) — 현재 SPA 탭 구조에 불필요한 복잡도
+- 대안 B: 부분 분리 (게임만) — 상수/유틸도 비대하여 전면 분리가 필요
+**최종 선택 이유**: 게임 컴포넌트 + 상수/유틸 + 공용 UI를 모두 분리하여 App.jsx는 레이아웃 + 상태관리만 담당. 기능 변경 없는 순수 리팩터링.
+**영향 범위**: src/ 전체 (App.jsx, constants.js, utils.js, Icons.jsx, components/ 7개 파일)
 
 ---
 
-### [2026-03-01] 끝말잇기 단어 DB 전략 — 막힌 단어 방지 브릿지 설계
+### [2026-03-01] PWA 적용 (vite-plugin-pwa)
 **상태**: 확정
-**결정 내용**: WC_WORDS 단어 DB에서 AI 스타터 풀을 "마지막 글자에 후속 단어가 있는 단어"만으로 제한하고, 데드엔드 글자용 브릿지 단어 ~30개를 추가
-**배경**: "친애하는"(끝 글자 "는")처럼 DB에 "는"으로 시작하는 단어가 없는 경우 AI가 첫 단어 선택 직후 플레이어가 즉시 막히는 문제 발생
+**결정 내용**: vite-plugin-pwa를 사용하여 서비스워커 자동 생성 및 PWA 매니페스트 설정
+**배경**: 모바일에서 홈화면 설치를 통한 앱 경험 제공 요구
 **검토한 대안들**:
-- 대안 A: 단어 DB를 대폭 확장(500개+) — 유지보수 부담, 게임 난이도 불균형
-- 대안 B: 막힌 경우 AI가 패배 처리 — 게임 시작 즉시 종료되어 UX 불량
-- 대안 C: AI 스타터 필터링 + 브릿지 단어 추가 — 적은 변경으로 근본 원인 해결
-**최종 선택 이유**: `starters` 배열 필터링(`WC_IDX[e.w.at(-1)]?.length > 0`)으로 데드엔드 단어를 시작점에서 원천 제거. 자주 등장하는 마지막 글자("애", "출", "생", "원" 등)에 대응하는 브릿지 명사 추가로 게임 흐름 보장.
-**영향 범위**: `src/App.jsx` — WC_WORDS 배열, WC_IDX 해시맵, startGame 함수 내 starters 필터
-
----
-
-### [2026-03-01] 끝말잇기 AI 턴 — useRef 가드로 race condition 해결
-**상태**: 확정
-**결정 내용**: AI 턴 useEffect에서 `aiThinking` state를 dependency array에서 제거하고 `aiRef = useRef(false)` 가드로 교체
-**배경**: 초기 구현에서 `useEffect(..., [myTurn, phase, aiThinking])`으로 설계. `setAiThinking(true)` 호출 시 useEffect가 재실행되고 cleanup이 pending setTimeout을 취소해 AI 턴이 영구 차단("생각 중..." 무한 표시)
-**검토한 대안들**:
-- 대안 A: `aiThinking`을 deps에 유지하고 cleanup 제거 — setTimeout이 중복 실행될 수 있음
-- 대안 B: `useCallback`으로 AI 로직 메모이제이션 — 복잡도 증가
-- 대안 C: `useRef` 가드 — cleanup의 setTimeout 취소와 무관하게 동기적으로 "이미 실행 중" 여부 추적 가능
-**최종 선택 이유**: `useRef`는 렌더링과 무관하게 동기적으로 읽고 쓸 수 있어 race condition 방지에 적합. deps에서 `aiThinking` 제거로 불필요한 effect 재실행 차단. setTimeout cleanup은 컴포넌트 언마운트 안전성을 위해 유지.
-**영향 범위**: `src/App.jsx` — WordChain 컴포넌트 내 AI 턴 useEffect, aiRef 선언
+- 대안 A: 수동 서비스워커 작성 — 보일러플레이트가 많고 Workbox 직접 설정 필요
+- 대안 B: Vite PWA 미사용, 정적 manifest.json만 — 오프라인 캐싱 불가
+**최종 선택 이유**: vite-plugin-pwa가 Workbox 기반 서비스워커를 자동 생성하고, 빌드 시 precache 목록도 자동 관리
+**영향 범위**: vite.config.js, package.json, index.html, public/ (아이콘 파일)

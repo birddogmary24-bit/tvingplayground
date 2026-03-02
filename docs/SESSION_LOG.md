@@ -101,38 +101,39 @@
 
 ---
 
-### [2026-03-01] feat: PWA 적용 + 끝말잇기 미니게임 구현
+### [2026-03-01] feat: PWA 적용 및 끝말잇기 게임 추가 (PR #10)
 **작업 내용**:
-
-**PWA 인프라**
-1. `vite-plugin-pwa` 설치 및 `vite.config.js` VitePWA 플러그인 설정
-   - manifest: name "TVING 놀이터", theme_color #FF2D55, display standalone, lang ko
-   - workbox 런타임 캐싱: Google Fonts(CacheFirst), TVING CDN 이미지(CacheFirst, 30일)
-2. `index.html` Apple PWA 메타 태그 추가 (apple-mobile-web-app-capable 등)
-3. `vercel.json` Service Worker 캐시 헤더 추가 (`Cache-Control: public, max-age=0, must-revalidate`)
-4. `scripts/generate-icons.js` 신규 생성 — Node.js SVG 아이콘 생성 스크립트
-5. `public/pwa-192x192.svg`, `public/pwa-512x512.svg`, `public/apple-touch-icon.svg` 생성
-
-**끝말잇기 게임 (WordChain)**
-1. `src/App.jsx`에 WordChain 컴포넌트 삽입 (~180줄)
-   - ~200개 단어 DB (`WC_WORDS`): TVING 제목 7개, 드라마/예능 제목 60개, 일반 명사 130개
-   - `WC_IDX` 해시맵: 첫 글자별 O(1) 빠른 검색
-   - AI 난이도 스케일링: 1-3라운드 랜덤 → 4-6라운드 TVING 우선 → 7라운드+ Greedy
-   - 채팅 UI (ready/playing/done 3단계), 15초 타이머, 자동 스크롤
-   - 점수 공식: `min(10 + round * 5, 40)` — 최대 40P
-2. 게임 라우팅 연결 (GAME_ICONS/GAME_NAMES 맵 + 클릭 핸들러)
-
-**버그 수정**
-- AI 턴 무한 대기 버그: `aiThinking`을 `useEffect` deps에서 제거하고 `useRef(false)` 가드로 교체
-- 막힌 단어(친애하는 "는"으로 끝남) 제거 + 브릿지 단어 ~30개 추가 + 스타터 필터링
-
-**의도/목적**:
-- PWA: 모바일 홈 화면 설치 지원, 오프라인 캐싱, iOS Apple Touch Icon 지원
-- 끝말잇기: "곧 오픈!" 스텁으로만 존재하던 게임 콘텐츠를 실제 구현하여 미니게임 라인업 완성
-
+1. **PWA(Progressive Web App) 적용**: vite-plugin-pwa 설치, manifest.webmanifest 생성, 서비스워커 등록
+2. **끝말잇기(WordChain) 미니게임 구현**: AI 대전 형태의 끝말잇기 게임
+   - 150+ 단어 사전 (TVING 제목, 드라마 제목, 일반 명사)
+   - AI 난이도 조절 (라운드별 전략 변화)
+   - 턴당 30초 타이머, 힌트 기능
+   - 채팅 형태 UI (AI/플레이어 말풍선)
+3. **PWA 아이콘**: SVG 기반 아이콘 생성 (192x192, 512x512, apple-touch-icon)
+**의도/목적**: 모바일 홈화면 설치 가능한 앱 경험 제공, 미니게임 라인업 확대
 **영향도**:
-- 직접 영향: `vite.config.js`, `index.html`, `vercel.json`, `package.json`, `src/App.jsx`
-- 신규 파일: `scripts/generate-icons.js`, `public/pwa-192x192.svg`, `public/pwa-512x512.svg`, `public/apple-touch-icon.svg`
-- 연관 영향: Vercel 빌드 시 `dist/sw.js`, `dist/manifest.webmanifest`, `dist/registerSW.js` 자동 생성
+- 직접 영향: vite.config.js, package.json, index.html, public/ (PWA 아이콘), src/App.jsx (WordChain 인라인)
+- 연관 영향: Vercel 배포 시 서비스워커 자동 생성
+**관련 커밋**: 9b35d7c (PR #10 → main merge: c29bbf0)
 
-**관련 커밋**: 9b35d7c (PR #10, merged to main)
+---
+
+### [2026-03-01] refactor: App.jsx 모놀리식 구조를 모듈로 분리 (PR #9)
+**작업 내용**:
+1. **App.jsx 1,010줄 → 328줄로 축소** (10개 모듈로 분리)
+   - `src/constants.js`: 데이터 상수, localStorage 헬퍼, 닉네임/레벨/게임 데이터
+   - `src/utils.js`: getLevel, getLvProgress, relTime 유틸 함수
+   - `src/Icons.jsx`: 13개 SVG 아이콘 오브젝트
+   - `src/components/ShowImage.jsx`: FallbackPoster + ShowImage
+   - `src/components/SharedUI.jsx`: SH, PlayBtn, Modal 공용 컴포넌트
+   - `src/components/Quiz.jsx`: 캐릭터 퀴즈 게임
+   - `src/components/Roulette.jsx`: 추천 룰렛 게임
+   - `src/components/FamousScene.jsx`: 명장면 모드 게임
+   - `src/components/CatGame.jsx`: 야옹이 키우기 게임
+   - `src/components/WordChain.jsx`: 끝말잇기 게임 (충돌 해결 시 추가)
+2. **main 브랜치 충돌 해결**: PR #10에서 추가된 끝말잇기 게임을 리팩터링 구조에 맞게 별도 컴포넌트로 분리
+**의도/목적**: 유지보수성 향상, 파일당 500~700줄 이내 규칙 준수
+**영향도**:
+- 직접 영향: src/App.jsx, src/constants.js, src/utils.js, src/Icons.jsx, src/components/ (8개 파일)
+- 연관 영향: 기능 변경 없음 (순수 리팩터링)
+**관련 커밋**: 4bf5ebe, ba6ef60 (충돌 해결) (PR #9 → main merge: d4af3c1)

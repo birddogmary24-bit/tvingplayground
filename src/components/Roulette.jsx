@@ -1,0 +1,9 @@
+import { useState } from "react";
+import Ic from "../Icons.jsx";
+import { SHOWS } from "../constants.js";
+
+export default function Roulette({ onDone, onRew }) {
+  const [sp,sSp]=useState(false);const [res,sRes]=useState(null);
+  const go=()=>{if(sp)return;sSp(true);setTimeout(()=>{sRes(SHOWS[Math.floor(Math.random()*SHOWS.length)]);sSp(false);onRew(30,"roulette");},2000);};
+  return<div style={{padding:24,textAlign:"center"}}><div style={{width:200,height:200,margin:"0 auto 24px",borderRadius:"50%",border:"4px solid #FF9500",display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",background:sp?"conic-gradient(#FF2D55,#FF9500,#FFD60A,#34C759,#5856D6,#FF2D55)":"#1C1C1E",animation:sp?"rl .5s linear infinite":"none"}}><style>{`@keyframes rl{from{transform:rotate(0)}to{transform:rotate(360deg)}}`}</style>{res&&!sp?<div style={{background:"#1C1C1E",borderRadius:"50%",width:160,height:160,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}><div style={{fontSize:14,color:"#aaa"}}>오늘의 추천</div><div style={{fontSize:18,fontWeight:700,color:"#fff",marginTop:4}}>{res.title}</div></div>:!sp?<div style={{background:"#1C1C1E",borderRadius:"50%",width:160,height:160,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:40}}>🎰</span></div>:null}</div>{res&&!sp&&<div style={{marginBottom:16}}><div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:12}}><Ic.Coin /><span style={{color:"#FFD60A",fontWeight:700}}>+30P</span></div></div>}<button onClick={res?onDone:go} style={{marginTop:12,padding:"12px 32px",background:res?"#333":"#FF9500",color:"#fff",border:"none",borderRadius:12,fontSize:16,fontWeight:600,cursor:"pointer"}}>{sp?"돌리는 중...":res?"돌아가기":"룰렛 돌리기!"}</button></div>;
+}
